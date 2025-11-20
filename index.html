@@ -3,454 +3,167 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Attendance Tracker</title>
+    <title>Attendance Tracker AI Test</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        h1 {
-            color: white;
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 2.5em;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-        }
-
-        .dashboard {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        @media (max-width: 768px) {
-            .dashboard {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .card {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-
-        .card h2 {
-            color: #667eea;
-            margin-bottom: 20px;
-            font-size: 1.5em;
-        }
-
-        .stats {
-            display: grid;
-            gap: 10px;
-        }
-
-        .stat-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border-left: 4px solid #667eea;
-        }
-
-        .subject-name {
-            font-weight: 600;
-            color: #333;
-        }
-
-        .attendance-bar {
-            flex: 1;
-            margin: 0 15px;
-            height: 8px;
-            background: #e0e0e0;
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .attendance-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            transition: width 0.3s;
-        }
-
-        .percentage {
-            font-weight: bold;
-            min-width: 60px;
-            text-align: right;
-        }
-
-        .good { color: #27ae60; }
-        .warning { color: #f39c12; }
-        .danger { color: #e74c3c; }
-
-        .chat-container {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            display: flex;
-            flex-direction: column;
-            height: 500px;
-        }
-
-        .chat-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 15px 15px 0 0;
-            font-weight: 600;
-            font-size: 1.2em;
-        }
-
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .message {
-            max-width: 80%;
-            padding: 12px 18px;
-            border-radius: 18px;
-            line-height: 1.5;
-            animation: fadeIn 0.3s;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .user-message {
-            background: #667eea;
-            color: white;
-            align-self: flex-end;
-            border-bottom-right-radius: 4px;
-        }
-
-        .ai-message {
-            background: #f1f3f5;
-            color: #333;
-            align-self: flex-start;
-            border-bottom-left-radius: 4px;
-        }
-
-        .chat-input-container {
-            padding: 20px;
-            border-top: 1px solid #e0e0e0;
-            display: flex;
-            gap: 10px;
-        }
-
-        .chat-input {
-            flex: 1;
-            padding: 12px 18px;
-            border: 2px solid #e0e0e0;
-            border-radius: 25px;
-            font-size: 1em;
-            outline: none;
-            transition: border 0.3s;
-        }
-
-        .chat-input:focus {
-            border-color: #667eea;
-        }
-
-        .send-btn {
-            padding: 12px 30px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 25px;
-            font-size: 1em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        .send-btn:hover {
-            transform: scale(1.05);
-        }
-
-        .send-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .loading {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border: 2px solid #667eea;
-            border-radius: 50%;
-            border-top-color: transparent;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .summary-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        .summary-item:last-child {
-            border-bottom: none;
-        }
+        body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f4f7f6; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        .data-section, .input-section, .output-section { background: #ecf0f1; padding: 15px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+        h2 { color: #34495e; margin-top: 0; }
+        textarea, input[type="text"] { width: 95%; padding: 10px; margin-top: 5px; border: 1px solid #bdc3c7; border-radius: 4px; box-sizing: border-box; }
+        button { background-color: #3498db; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; transition: background-color 0.3s; }
+        button:hover { background-color: #2980b9; }
+        #response-output { white-space: pre-wrap; background-color: white; padding: 10px; border: 1px solid #bdc3c7; min-height: 100px; }
+        .data-point { margin-bottom: 5px; }
+        .disclaimer { margin-top: 20px; font-size: 0.8em; color: #7f8c8d; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>📚 AI Attendance Tracker</h1>
-        
-        <div class="dashboard">
-            <div class="card">
-                <h2>📊 Subject-wise Attendance</h2>
-                <div class="stats" id="subjectStats"></div>
-            </div>
 
-            <div class="card">
-                <h2>📈 Overall Summary</h2>
-                <div id="summary"></div>
-            </div>
-        </div>
+    <h1>🤖 Attendance AI Performance Analyzer</h1>
+    <p>This page tests the Gemini API with your specific attendance data.</p>
+    <hr>
 
-        <div class="chat-container">
-            <div class="chat-header">
-                🤖 Ask your Attendance AI anything!
+    <div class="data-section">
+        <h2>📊 Current Attendance Data (Simulated Firebase)</h2>
+        <div id="attendance-data-display">
             </div>
-            <div class="chat-messages" id="chatMessages">
-                <div class="message ai-message">
-                    Hi! I'm your attendance AI assistant. Ask me anything about your attendance like:
-                    <br>• "Can I skip classes for 2 days?"
-                    <br>• "What if I skip 3 days then attend 2 days?"
-                    <br>• "Which subject needs more attention?"
-                    <br>• "What's my overall attendance percentage?"
-                </div>
-            </div>
-            <div class="chat-input-container">
-                <input type="text" class="chat-input" id="userInput" placeholder="Ask about your attendance...">
-                <button class="send-btn" id="sendBtn">Send</button>
-            </div>
+        <p class="disclaimer">This data will be automatically added to the AI prompt.</p>
+    </div>
+
+    <div class="input-section">
+        <h2>❓ Ask a Question</h2>
+        <input type="text" id="user-prompt" placeholder="E.g., Can I skip all classes for next 2 days?" value="If I skip 3 days then attend 2 days next what will be my percentage?" required>
+        <br><br>
+        <button onclick="sendPrompt()">Get AI Analysis</button>
+    </div>
+
+    <div class="output-section">
+        <h2>💡 AI Response</h2>
+        <div id="response-output">
+            The AI response will appear here...
         </div>
+        <p class="disclaimer">Response generated by the Google Gemini API.</p>
     </div>
 
     <script>
-        const GEMINI_API_KEY = 'AIzaSyBqgrroGtY9YNz5TwrG0Tj6OHaAGVhAEGU';
-        const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
+        // ⚠️ WARNING: API Key is exposed in client-side code. Use a backend for production.
+        const GEMINI_API_KEY = "AIzaSyBqgrroGtY9YNz5TwrG0Tj6OHaAGVhAEGU"; // Your key
+        const GEMINI_MODEL = "gemini-2.5-flash"; // A fast and capable model
 
+        // 1. SIMULATED FIREBASE DATA (Your input data structure)
         const attendanceData = {
             totalCollegeDays: 34,
-            classesPerDay: [3, 4],
-            subjects: {
-                'CA': { attended: 5, total: 8 },
-                'FM': { attended: 23, total: 27 },
-                'Geo': { attended: 31, total: 34 },
-                'Bio': { attended: 9, total: 15 },
-                'Ast': { attended: 16, total: 24 },
-                'Ut': { attended: 8, total: 10 }
+            totalClassesPerDay: "3-4", // Use a string to reflect the range given
+            subjectAttendance: {
+                "Ca": { attended: 5, total: 8 },
+                "Fm": { attended: 23, total: 27 },
+                "Geo": { attended: 31, total: 34 },
+                "Bio": { attended: 9, total: 15 },
+                "Ast": { attended: 16, total: 24 },
+                "Ut": { attended: 8, total: 10 }
             }
         };
 
-        function calculatePercentage(attended, total) {
-            return total > 0 ? ((attended / total) * 100).toFixed(2) : 0;
-        }
-
-        function getPercentageClass(percentage) {
-            if (percentage >= 75) return 'good';
-            if (percentage >= 60) return 'warning';
-            return 'danger';
-        }
-
-        function displayStats() {
-            const statsContainer = document.getElementById('subjectStats');
-            statsContainer.innerHTML = '';
-
-            for (const [subject, data] of Object.entries(attendanceData.subjects)) {
-                const percentage = calculatePercentage(data.attended, data.total);
-                const percentageClass = getPercentageClass(percentage);
-
-                const statItem = document.createElement('div');
-                statItem.className = 'stat-item';
-                statItem.innerHTML = `
-                    <span class="subject-name">${subject}</span>
-                    <div class="attendance-bar">
-                        <div class="attendance-fill" style="width: ${percentage}%"></div>
-                    </div>
-                    <span class="percentage ${percentageClass}">${percentage}%</span>
-                    <span style="color: #999; font-size: 0.9em;">(${data.attended}/${data.total})</span>
-                `;
-                statsContainer.appendChild(statItem);
-            }
-        }
-
-        function displaySummary() {
-            const summaryContainer = document.getElementById('summary');
+        // Function to display the data on the page
+        function displayData() {
+            const displayDiv = document.getElementById('attendance-data-display');
+            let html = `<div class="data-point"><strong>Total College Days:</strong> ${attendanceData.totalCollegeDays}</div>`;
+            html += `<div class="data-point"><strong>Classes/Day:</strong> ${attendanceData.totalClassesPerDay}</div>`;
+            html += `<h3>Subject-wise:</h3><ul>`;
             
-            let totalAttended = 0;
-            let totalClasses = 0;
-            
-            for (const data of Object.values(attendanceData.subjects)) {
-                totalAttended += data.attended;
-                totalClasses += data.total;
+            for (const [subject, data] of Object.entries(attendanceData.subjectAttendance)) {
+                const percentage = ((data.attended / data.total) * 100).toFixed(2);
+                html += `<li><strong>${subject}:</strong> ${data.attended} / ${data.total} (${percentage}%)</li>`;
             }
-
-            const overallPercentage = calculatePercentage(totalAttended, totalClasses);
-            const percentageClass = getPercentageClass(overallPercentage);
-
-            const subjectsBelow75 = Object.entries(attendanceData.subjects)
-                .filter(([_, data]) => calculatePercentage(data.attended, data.total) < 75)
-                .map(([subject, _]) => subject);
-
-            summaryContainer.innerHTML = `
-                <div class="summary-item">
-                    <span>Total College Days:</span>
-                    <strong>${attendanceData.totalCollegeDays}</strong>
-                </div>
-                <div class="summary-item">
-                    <span>Classes Per Day:</span>
-                    <strong>${attendanceData.classesPerDay.join(' or ')}</strong>
-                </div>
-                <div class="summary-item">
-                    <span>Total Classes Attended:</span>
-                    <strong>${totalAttended} / ${totalClasses}</strong>
-                </div>
-                <div class="summary-item">
-                    <span>Overall Percentage:</span>
-                    <strong class="${percentageClass}" style="font-size: 1.3em;">${overallPercentage}%</strong>
-                </div>
-                ${subjectsBelow75.length > 0 ? `
-                <div class="summary-item" style="background: #fff3cd; padding: 10px; border-radius: 8px; margin-top: 10px;">
-                    <span>⚠️ Subjects below 75%:</span>
-                    <strong style="color: #856404;">${subjectsBelow75.join(', ')}</strong>
-                </div>
-                ` : ''}
+            html += `</ul>`;
+            displayDiv.innerHTML = html;
+        }
+        
+        // Function to convert the data into a clear, parsable string for the AI
+        function createDataPrompt() {
+            let dataString = `
+                Current Attendance Performance:
+                - Total College Days passed: ${attendanceData.totalCollegeDays}
+                - Classes per day: ${attendanceData.totalClassesPerDay}
+                - Subject-wise Attendance (Attended/Total - Percentage):
             `;
-        }
 
-        function addMessage(content, isUser = false) {
-            const messagesContainer = document.getElementById('chatMessages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
-            messageDiv.textContent = content;
-            messagesContainer.appendChild(messageDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }
-
-        function addLoadingMessage() {
-            const messagesContainer = document.getElementById('chatMessages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message ai-message';
-            messageDiv.id = 'loadingMessage';
-            messageDiv.innerHTML = '<span class="loading"></span> Thinking...';
-            messagesContainer.appendChild(messageDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }
-
-        function removeLoadingMessage() {
-            const loadingMessage = document.getElementById('loadingMessage');
-            if (loadingMessage) {
-                loadingMessage.remove();
+            for (const [subject, data] of Object.entries(attendanceData.subjectAttendance)) {
+                const percentage = ((data.attended / data.total) * 100).toFixed(2);
+                dataString += `\n  - ${subject}: ${data.attended}/${data.total} (${percentage}%)`;
             }
+            return dataString;
         }
 
-        async function sendToGemini(userMessage) {
-            const context = `You are an AI assistant helping a college student track their attendance. Here is their current attendance data:
+        // 2. MAIN FUNCTION TO CALL THE GEMINI API
+        async function sendPrompt() {
+            const userPrompt = document.getElementById('user-prompt').value;
+            const outputDiv = document.getElementById('response-output');
+            
+            if (!userPrompt) {
+                outputDiv.innerText = "Please enter a question.";
+                return;
+            }
 
-Total college days: ${attendanceData.totalCollegeDays}
-Classes per day: ${attendanceData.classesPerDay.join(' or ')}
+            outputDiv.innerText = "Processing... Please wait for the AI analysis.";
+            
+            const dataPrompt = createDataPrompt();
 
-Subject-wise attendance:
-${Object.entries(attendanceData.subjects).map(([subject, data]) => 
-    `${subject}: ${data.attended}/${data.total} (${calculatePercentage(data.attended, data.total)}%)`
-).join('\n')}
+            // Constructing the complete prompt for the AI
+            const fullPrompt = `
+                You are an Attendance Analysis AI for a college student. 
+                Your task is to analyze the student's current attendance data and provide a detailed, accurate response to their attendance-related question. 
+                Perform necessary calculations (e.g., projected attendance percentage) based on the input data and the student's hypothetical scenario.
 
-When the student asks questions like "Can I skip X days?" or "What if I skip X days then attend Y days?", calculate the impact on their attendance percentage for each subject and overall. Be helpful, concise, and specific with numbers.
+                ---
+                STUDENT'S CURRENT ATTENDANCE DATA:
+                ${dataPrompt}
+                ---
 
-Student's question: ${userMessage}`;
+                STUDENT'S QUESTION:
+                "${userPrompt}"
+                ---
+
+                Provide a clear and concise answer, including the current percentages, the projected changes, and the final percentage for the scenario. Be helpful but strictly factual based on the numbers.
+            `;
 
             try {
-                const response = await fetch(GEMINI_API_URL, {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+                
+                const response = await fetch(url, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
                         contents: [{
-                            parts: [{
-                                text: context
-                            }]
-                        }]
+                            parts: [{ text: fullPrompt }]
+                        }],
+                        // Optional safety settings or generation config can be added here
                     })
                 });
 
-                const data = await response.json();
-                
-                if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
-                    return data.candidates[0].content.parts[0].text;
+                const result = await response.json();
+
+                if (result.error) {
+                    outputDiv.innerText = `ERROR: ${result.error.message}`;
+                    console.error("API Error:", result.error);
+                } else if (result.candidates && result.candidates.length > 0) {
+                    const aiText = result.candidates[0].content.parts[0].text;
+                    outputDiv.innerText = aiText;
                 } else {
-                    throw new Error('Unexpected response format');
+                    outputDiv.innerText = "Could not get a valid response from the AI. Check network or API key/quota.";
                 }
+
             } catch (error) {
-                console.error('Error:', error);
-                return 'Sorry, I encountered an error. Please try again.';
+                outputDiv.innerText = `An unexpected error occurred: ${error.message}`;
+                console.error("Fetch Error:", error);
             }
         }
 
-        async function handleSend() {
-            const input = document.getElementById('userInput');
-            const sendBtn = document.getElementById('sendBtn');
-            const userMessage = input.value.trim();
-
-            if (!userMessage) return;
-
-            addMessage(userMessage, true);
-            input.value = '';
-            sendBtn.disabled = true;
-            addLoadingMessage();
-
-            const aiResponse = await sendToGemini(userMessage);
-            
-            removeLoadingMessage();
-            addMessage(aiResponse);
-            sendBtn.disabled = false;
-            input.focus();
-        }
-
-        document.getElementById('sendBtn').addEventListener('click', handleSend);
-        document.getElementById('userInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                handleSend();
-            }
-        });
-
-        displayStats();
-        displaySummary();
+        // Initialize the page display
+        window.onload = displayData;
     </script>
+
 </body>
 </html>
