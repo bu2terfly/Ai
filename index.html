@@ -3,167 +3,319 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attendance Tracker AI Test</title>
+    <title>College AI Assistant - Token Tracker</title>
     <style>
-        body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f4f7f6; }
-        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
-        .data-section, .input-section, .output-section { background: #ecf0f1; padding: 15px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
-        h2 { color: #34495e; margin-top: 0; }
-        textarea, input[type="text"] { width: 95%; padding: 10px; margin-top: 5px; border: 1px solid #bdc3c7; border-radius: 4px; box-sizing: border-box; }
-        button { background-color: #3498db; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; transition: background-color 0.3s; }
-        button:hover { background-color: #2980b9; }
-        #response-output { white-space: pre-wrap; background-color: white; padding: 10px; border: 1px solid #bdc3c7; min-height: 100px; }
-        .data-point { margin-bottom: 5px; }
-        .disclaimer { margin-top: 20px; font-size: 0.8em; color: #7f8c8d; }
+        /* Modern Minimal CSS (Same as before, with added monitor styling) */
+        :root {
+            --primary: #007bff;
+            --secondary: #6c757d;
+            --background-dark: #1e1e1e;
+            --text-light: #f5f5f5;
+            --card-dark: #2a2a2a;
+            --border-color: #444;
+            --ai-bubble: #343a40;
+            --user-bubble: var(--primary);
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--background-dark);
+            color: var(--text-light);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .chat-container {
+            width: 100%;
+            max-width: 700px;
+            height: 90vh; /* Increased height to accommodate the monitor */
+            display: flex;
+            flex-direction: column;
+            background-color: var(--card-dark);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+        .header {
+            padding: 15px 20px;
+            background-color: var(--primary);
+            color: white;
+            font-size: 1.2em;
+            font-weight: bold;
+            text-align: center;
+        }
+        .chat-display {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary) var(--card-dark);
+        }
+        .message {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+        .user-message {
+            align-self: flex-end;
+            background-color: var(--user-bubble);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        .ai-message {
+            align-self: flex-start;
+            background-color: var(--ai-bubble);
+            color: var(--text-light);
+            border-bottom-left-radius: 4px;
+        }
+        .input-area {
+            display: flex;
+            padding: 15px 20px;
+            border-top: 1px solid var(--border-color);
+        }
+        #userInput {
+            flex-grow: 1;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 25px;
+            background-color: var(--background-dark);
+            color: var(--text-light);
+            font-size: 1em;
+            margin-right: 10px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        #userInput:focus {
+            border-color: var(--primary);
+        }
+        #sendButton {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+        #sendButton:hover {
+            background-color: #0056b3;
+        }
+        #sendButton:active {
+            transform: scale(0.95);
+        }
+        .loading::after {
+            content: '...';
+            display: inline-block;
+            animation: loading-dots 1.5s infinite;
+        }
+        @keyframes loading-dots {
+            0% { content: '.'; }
+            33% { content: '..'; }
+            66% { content: '...'; }
+        }
+        /* New Styles for Usage Monitor */
+        .monitor-panel {
+            background-color: var(--background-dark);
+            padding: 10px 20px;
+            font-size: 0.85em;
+            border-top: 2px solid var(--primary);
+            display: flex;
+            justify-content: space-between;
+        }
+        .monitor-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .monitor-label {
+            color: var(--secondary);
+            font-weight: normal;
+        }
+        .monitor-value {
+            font-weight: bold;
+            color: var(--text-light);
+        }
     </style>
 </head>
 <body>
-
-    <h1>🤖 Attendance AI Performance Analyzer</h1>
-    <p>This page tests the Gemini API with your specific attendance data.</p>
-    <hr>
-
-    <div class="data-section">
-        <h2>📊 Current Attendance Data (Simulated Firebase)</h2>
-        <div id="attendance-data-display">
-            </div>
-        <p class="disclaimer">This data will be automatically added to the AI prompt.</p>
-    </div>
-
-    <div class="input-section">
-        <h2>❓ Ask a Question</h2>
-        <input type="text" id="user-prompt" placeholder="E.g., Can I skip all classes for next 2 days?" value="If I skip 3 days then attend 2 days next what will be my percentage?" required>
-        <br><br>
-        <button onclick="sendPrompt()">Get AI Analysis</button>
-    </div>
-
-    <div class="output-section">
-        <h2>💡 AI Response</h2>
-        <div id="response-output">
-            The AI response will appear here...
+    <div class="chat-container">
+        <div class="header">
+            Dispur College AI Assistant 🎓
         </div>
-        <p class="disclaimer">Response generated by the Google Gemini API.</p>
+        <div class="chat-display" id="chatDisplay">
+            <div class="message ai-message">
+                Hello! I am your College Assistant. Ask me about **attendance** or **college info** (like the library or principal).
+            </div>
+        </div>
+        
+        <div class="monitor-panel">
+            <div class="monitor-item">
+                <span class="monitor-label">Requests Per Day (RPD)</span>
+                <span class="monitor-value" id="monitorRPD">0</span>
+            </div>
+            <div class="monitor-item">
+                <span class="monitor-label">Total Tokens</span>
+                <span class="monitor-value" id="monitorTokens">0</span>
+            </div>
+            <div class="monitor-item">
+                <span class="monitor-label">Last Input Tokens</span>
+                <span class="monitor-value" id="monitorInput">0</span>
+            </div>
+            <div class="monitor-item">
+                <span class="monitor-label">Last Output Tokens</span>
+                <span class="monitor-value" id="monitorOutput">0</span>
+            </div>
+        </div>
+
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="Ask a question about college or your attendance..." autofocus>
+            <button id="sendButton">➤</button>
+        </div>
     </div>
 
     <script>
-        // ⚠️ WARNING: API Key is exposed in client-side code. Use a backend for production.
-        const GEMINI_API_KEY = "AIzaSyBqgrroGtY9YNz5TwrG0Tj6OHaAGVhAEGU"; // Your key
-        const GEMINI_MODEL = "gemini-2.5-flash"; // A fast and capable model
+        // *** PLACEHOLDER: 1. Replace with your actual Gemini API Key ***
+        const GEMINI_API_KEY = "AIzaSyBqgrroGtY9YNz5TwrG0Tj6OHaAGVhAEGU"; 
+        const GEMINI_MODEL = "GEMINI-2.5 FLASH LITE"
+        
+        // --- DUMMY KNOWLEDGE BASE (RAG Context Simulation) ---
+        const DUMMY_COLLEGE_INFO = {
+            "library": "Dispur college's library is located behind the cafeteria on the ground floor of the Principle's office building.",
+            "principal": "The principal's name is Dr. S. K. Sharma, and his joining date was August 15, 2018.",
+            "exams": "The sessional exam dates are October 15th-20th. Key topics are Chapter 3 and 5.",
+            "policy": "The college attendance policy states that students must maintain a minimum of 75% attendance to sit for the final exam."
+        };
 
-        // 1. SIMULATED FIREBASE DATA (Your input data structure)
-        const attendanceData = {
-            totalCollegeDays: 34,
-            totalClassesPerDay: "3-4", // Use a string to reflect the range given
-            subjectAttendance: {
-                "Ca": { attended: 5, total: 8 },
-                "Fm": { attended: 23, total: 27 },
-                "Geo": { attended: 31, total: 34 },
-                "Bio": { attended: 9, total: 15 },
-                "Ast": { attended: 16, total: 24 },
-                "Ut": { attended: 8, total: 10 }
+        // --- TOKEN MONITORING OBJECT (Replaces console logging) ---
+        const tokenMonitor = {
+            rpdCount: 0,
+            totalTokens: 0,
+            updateUI: function(inputTokens, outputTokens) {
+                // RPD only increments on a simulated API call (Cache Miss)
+                if (inputTokens > 0) { 
+                    this.rpdCount += 1;
+                    this.totalTokens += inputTokens + outputTokens;
+                }
+                
+                // Update the UI elements
+                document.getElementById('monitorRPD').textContent = this.rpdCount;
+                document.getElementById('monitorTokens').textContent = this.totalTokens;
+                document.getElementById('monitorInput').textContent = inputTokens;
+                document.getElementById('monitorOutput').textContent = outputTokens;
             }
         };
 
-        // Function to display the data on the page
-        function displayData() {
-            const displayDiv = document.getElementById('attendance-data-display');
-            let html = `<div class="data-point"><strong>Total College Days:</strong> ${attendanceData.totalCollegeDays}</div>`;
-            html += `<div class="data-point"><strong>Classes/Day:</strong> ${attendanceData.totalClassesPerDay}</div>`;
-            html += `<h3>Subject-wise:</h3><ul>`;
-            
-            for (const [subject, data] of Object.entries(attendanceData.subjectAttendance)) {
-                const percentage = ((data.attended / data.total) * 100).toFixed(2);
-                html += `<li><strong>${subject}:</strong> ${data.attended} / ${data.total} (${percentage}%)</li>`;
-            }
-            html += `</ul>`;
-            displayDiv.innerHTML = html;
-        }
-        
-        // Function to convert the data into a clear, parsable string for the AI
-        function createDataPrompt() {
-            let dataString = `
-                Current Attendance Performance:
-                - Total College Days passed: ${attendanceData.totalCollegeDays}
-                - Classes per day: ${attendanceData.totalClassesPerDay}
-                - Subject-wise Attendance (Attended/Total - Percentage):
-            `;
+        const chatDisplay = document.getElementById('chatDisplay');
+        const userInput = document.getElementById('userInput');
+        const sendButton = document.getElementById('sendButton');
 
-            for (const [subject, data] of Object.entries(attendanceData.subjectAttendance)) {
-                const percentage = ((data.attended / data.total) * 100).toFixed(2);
-                dataString += `\n  - ${subject}: ${data.attended}/${data.total} (${percentage}%)`;
-            }
-            return dataString;
+        function appendMessage(sender, text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message');
+            messageDiv.classList.add(sender === 'user' ? 'user-message' : 'ai-message');
+            messageDiv.innerHTML = text; 
+            chatDisplay.appendChild(messageDiv);
+            chatDisplay.scrollTop = chatDisplay.scrollHeight;
+            return messageDiv;
         }
 
-        // 2. MAIN FUNCTION TO CALL THE GEMINI API
-        async function sendPrompt() {
-            const userPrompt = document.getElementById('user-prompt').value;
-            const outputDiv = document.getElementById('response-output');
+        function getSimulatedResponse(message) {
+            const lowerMsg = message.toLowerCase();
             
-            if (!userPrompt) {
-                outputDiv.innerText = "Please enter a question.";
-                return;
+            // --- Caching/Static Questions (Simulated Cache Hit) ---
+            if (lowerMsg.includes('library') || lowerMsg.includes('located') || lowerMsg.includes('room')) {
+                // If this were a real app, the server checks cache, finds it, and sends the answer.
+                // TOKEN COST: 0 (Cache Hit)
+                return { 
+                    text: DUMMY_COLLEGE_INFO.library, 
+                    tokens: { input: 0, output: 0, cached: true } 
+                };
             }
-
-            outputDiv.innerText = "Processing... Please wait for the AI analysis.";
+            if (lowerMsg.includes('principal') || lowerMsg.includes('date')) {
+                 return { 
+                    text: DUMMY_COLLEGE_INFO.principal, 
+                    tokens: { input: 0, output: 0, cached: true } 
+                };
+            }
             
-            const dataPrompt = createDataPrompt();
-
-            // Constructing the complete prompt for the AI
-            const fullPrompt = `
-                You are an Attendance Analysis AI for a college student. 
-                Your task is to analyze the student's current attendance data and provide a detailed, accurate response to their attendance-related question. 
-                Perform necessary calculations (e.g., projected attendance percentage) based on the input data and the student's hypothetical scenario.
-
-                ---
-                STUDENT'S CURRENT ATTENDANCE DATA:
-                ${dataPrompt}
-                ---
-
-                STUDENT'S QUESTION:
-                "${userPrompt}"
-                ---
-
-                Provide a clear and concise answer, including the current percentages, the projected changes, and the final percentage for the scenario. Be helpful but strictly factual based on the numbers.
-            `;
-
-            try {
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+            // --- Attendance/Dynamic Questions (Simulated API Call/Cache Miss) ---
+            if (lowerMsg.includes('attendance') || lowerMsg.includes('skip') || lowerMsg.includes('percentage')) {
+                // Simulate a successful Function Call (Cost based on our previous calculation)
+                const current = Math.floor(Math.random() * (90 - 70) + 70); // Random initial percentage
+                const projection = Math.floor(current * 0.95); // Simulate a drop
                 
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        contents: [{
-                            parts: [{ text: fullPrompt }]
-                        }],
-                        // Optional safety settings or generation config can be added here
-                    })
-                });
-
-                const result = await response.json();
-
-                if (result.error) {
-                    outputDiv.innerText = `ERROR: ${result.error.message}`;
-                    console.error("API Error:", result.error);
-                } else if (result.candidates && result.candidates.length > 0) {
-                    const aiText = result.candidates[0].content.parts[0].text;
-                    outputDiv.innerText = aiText;
-                } else {
-                    outputDiv.innerText = "Could not get a valid response from the AI. Check network or API key/quota.";
-                }
-
-            } catch (error) {
-                outputDiv.innerText = `An unexpected error occurred: ${error.message}`;
-                console.error("Fetch Error:", error);
+                return {
+                    text: `Your Current overall is **${current}%**. If you skip 3 days then your overall will be **${projection}%** for all subject combined.`,
+                    tokens: { input: 143, output: 65, cached: false } // Our calculated token usage
+                };
             }
+
+            // --- General Fallback Question (Simulated API Call/Cache Miss) ---
+            return {
+                text: "I can answer questions about attendance, the library, or the principal. Please try asking one of those!",
+                tokens: { input: 80, output: 40, cached: false } 
+            };
         }
 
-        // Initialize the page display
-        window.onload = displayData;
-    </script>
 
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            // 1. Display user message
+            appendMessage('user', message);
+            userInput.value = '';
+            
+            // 2. Get simulated response and token data
+            const simResult = getSimulatedResponse(message);
+            const tokenData = simResult.tokens;
+
+            // 3. Display loading message only if an API call is simulated
+            let loadingMessage;
+            if (!tokenData.cached) {
+                loadingMessage = appendMessage('ai', '<span class="loading">Thinking...</span>');
+                sendButton.disabled = true;
+                await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network latency
+            } else {
+                 // For cached hits, display instantly and mark as cached
+                const cacheHitMessage = appendMessage('ai', '⚡️ **Cache Hit!** Finding info instantly...');
+                await new Promise(resolve => setTimeout(resolve, 500)); 
+                cacheHitMessage.remove(); // Remove the cache hit message after a moment
+            }
+
+
+            // 4. Update the loading message or append the instant answer
+            if (loadingMessage) {
+                loadingMessage.innerHTML = simResult.text;
+            } else {
+                appendMessage('ai', simResult.text);
+            }
+
+            // 5. Update the UI monitor with the usage data
+            tokenMonitor.updateUI(tokenData.input, tokenData.output);
+            
+            sendButton.disabled = false;
+        }
+
+        sendButton.addEventListener('click', sendMessage);
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        // Initialize the monitor UI
+        tokenMonitor.updateUI(0, 0);
+
+    </script>
 </body>
 </html>
