@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minimal Attendance AI Dashboard</title>
+    <title>Mobile Attendance AI Dashboard</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         
@@ -18,62 +18,78 @@
             --danger-color: #FF5252;
         }
 
+        /* --- Base & Typography --- */
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-light);
             margin: 0;
-            padding: 40px 20px;
+            padding: 20px;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
-            min-height: 100vh;
         }
 
         .dashboard-container {
             width: 100%;
             max-width: 1100px;
-            display: grid;
-            grid-template-columns: 350px 1fr;
-            gap: 30px;
+            display: flex;
+            flex-direction: column; /* Stacked on mobile by default */
+            gap: 20px;
         }
 
         /* --- Global Card Styling --- */
         .card {
             background: var(--card-bg);
-            padding: 25px;
+            padding: 20px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
             border: 1px solid var(--border-color);
         }
 
-        /* --- Sidebar (Attendance Data) --- */
+        /* --- Header & Sidebar --- */
+        header h1 {
+            font-size: 2.2em;
+            font-weight: 900;
+            margin: 0 0 5px 0;
+            color: white;
+            text-align: center;
+        }
+        header p {
+            color: var(--text-muted);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
         .sidebar {
             display: flex;
             flex-direction: column;
-            gap: 30px;
+            gap: 20px;
+            order: 2; /* Sidebar moves below main content on mobile */
         }
 
         .data-section h2 {
             color: var(--primary-color);
             margin-top: 0;
-            font-size: 1.5em;
+            font-size: 1.3em;
             border-bottom: 1px solid var(--border-color);
             padding-bottom: 10px;
             margin-bottom: 15px;
         }
 
         .data-point {
-            margin-bottom: 10px;
-            font-size: 0.95em;
+            margin-bottom: 8px;
+            font-size: 0.9em;
         }
-
-        .data-point strong {
-            color: var(--text-light);
-            font-weight: 600;
-        }
-
-        .data-point span {
-            color: var(--text-muted);
+        
+        /* SPI Placeholder Style */
+        .spi-placeholder {
+            padding: 10px;
+            background-color: #3f3f5f;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #ffc107; /* Amber color */
         }
 
         .subject-list {
@@ -100,44 +116,39 @@
         .main-content {
             display: flex;
             flex-direction: column;
-            gap: 30px;
-        }
-
-        header h1 {
-            font-size: 2.5em;
-            font-weight: 900;
-            margin: 0 0 10px 0;
-            color: white;
+            gap: 20px;
+            order: 1; /* Main content stays on top on mobile */
         }
 
         /* --- Input Section --- */
-        .input-section {
-            display: flex;
-            flex-direction: column;
-        }
-
         #user-prompt {
             background-color: #3f3f5f;
             color: var(--text-light);
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            padding: 15px;
+            padding: 12px;
             font-size: 1em;
             margin-bottom: 15px;
-            width: calc(100% - 30px);
+            width: 100%;
             box-sizing: border-box;
         }
 
         .prompt-controls {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column; /* Stack controls on mobile */
+            gap: 10px;
+            align-items: stretch;
+        }
+        
+        .prompt-controls span {
+            text-align: center;
+            font-size: 0.85em;
         }
 
         button {
             background-color: var(--primary-color);
             color: var(--card-bg);
-            padding: 12px 25px;
+            padding: 12px 20px;
             border: none;
             border-radius: 6px;
             cursor: pointer;
@@ -146,13 +157,9 @@
             transition: background-color 0.2s, transform 0.1s;
         }
 
-        button:hover { background-color: #00a4b9; }
-        button:active { transform: scale(0.98); }
-        button:disabled { background-color: #555; cursor: not-allowed; }
-
         /* --- Output Section --- */
         .output-section {
-            min-height: 250px;
+            min-height: 200px;
             display: flex;
             flex-direction: column;
         }
@@ -168,32 +175,33 @@
             line-height: 1.6;
             overflow-x: auto;
             color: var(--text-light);
+            font-size: 0.95em;
         }
 
         /* --- Metrics Section --- */
         .metrics-section {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
+            grid-template-columns: repeat(2, 1fr); /* 2 columns on mobile */
+            gap: 10px;
             margin-top: 15px;
         }
 
         .metric-item {
             background-color: #3f3f5f;
-            padding: 15px;
+            padding: 10px;
             border-radius: 8px;
             text-align: center;
         }
 
         .metric-item-value {
-            font-size: 1.4em;
+            font-size: 1.2em;
             font-weight: 700;
             color: var(--primary-color);
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
 
         .metric-item-label {
-            font-size: 0.8em;
+            font-size: 0.7em;
             color: var(--text-muted);
         }
 
@@ -204,29 +212,79 @@
             text-align: center;
         }
 
+        /* --- Desktop View (Min-width: 768px) --- */
+        @media (min-width: 768px) {
+            .dashboard-container {
+                flex-direction: row;
+                display: grid;
+                grid-template-columns: 350px 1fr; /* Switch to 2-column layout */
+                gap: 30px;
+            }
+
+            .sidebar {
+                order: 1; /* Sidebar goes back to the left */
+            }
+
+            .main-content {
+                order: 2; /* Main content goes back to the right */
+            }
+
+            .metrics-section {
+                grid-template-columns: repeat(4, 1fr); /* 4 columns on desktop */
+            }
+            
+            .prompt-controls {
+                flex-direction: row; /* Controls back in a row */
+                justify-content: space-between;
+                align-items: center;
+            }
+        }
     </style>
 </head>
 <body>
 
     <div class="dashboard-container">
         
-        <div class="sidebar">
+        <div class="main-content">
             <header>
                 <h1>Attendance AI ⚡</h1>
-                <p style="color: var(--text-muted);">Testing Gemini for college attendance predictions.</p>
+                <p>Testing Gemini for personalized college attendance analysis.</p>
             </header>
+
+            <div class="input-section card">
+                <h2>💬 Ask Your AI</h2>
+                <input type="text" id="user-prompt" placeholder="E.g., Can I skip all classes for next 2 days?" value="If I skip 3 days then attend 2 days next what will be my percentage?" required>
+                
+                <div class="prompt-controls">
+                    <span style="color: var(--text-muted);">Model: **gemini-2.5-flash**</span>
+                    <button id="send-button" onclick="sendPrompt()">Get Analysis</button>
+                </div>
+            </div>
+
+            <div class="output-section card">
+                <h2>🧠 AI Response</h2>
+                <pre id="response-output">
+                    The AI analysis will appear here. I'll keep the response *friendly, concise, and point-to-point*!
+                </pre>
+            </div>
+        </div>
+        
+        <div class="sidebar">
 
             <div class="data-section card">
                 <h2>Current Data Status</h2>
                 <div id="attendance-data-display">
                     </div>
+                <div class="spi-placeholder">
+                    📈 **SPI Placeholder:** (8.4/10.0) - Add your Semester Performance Index here!
+                </div>
             </div>
 
             <div class="data-section card">
-                <h2>⚙️ API Metrics (Estimate)</h2>
+                <h2>⚙️ API Metrics</h2>
                 <div class="metrics-section">
                     <div class="metric-item">
-                        <div class="metric-item-value" id="metric-rpd">~0.5s</div>
+                        <div class="metric-item-value" id="metric-rpd">--</div>
                         <div class="metric-item-label">RPD (sec)</div>
                     </div>
                     <div class="metric-item">
@@ -242,35 +300,15 @@
                         <div class="metric-item-label">Tokens Out</div>
                     </div>
                 </div>
-                <p class="disclaimer">Note: RPD/Cost/Tokens are simulated/placeholder on the frontend. Use a backend for real data.</p>
+                <p class="disclaimer">Note: Metrics are frontend estimates; use a secure backend for production tracking.</p>
             </div>
         </div>
 
-        <div class="main-content">
-            
-            <div class="input-section card">
-                <h2>💬 Ask Your AI</h2>
-                <input type="text" id="user-prompt" placeholder="E.g., Can I skip all classes for next 2 days?" value="If I skip 3 days then attend 2 days next what will be my percentage?" required>
-                
-                <div class="prompt-controls">
-                    <span style="color: var(--text-muted); font-size: 0.9em;">Model: **gemini-2.5-flash**</span>
-                    <button id="send-button" onclick="sendPrompt()">Get Analysis</button>
-                </div>
-            </div>
-
-            <div class="output-section card">
-                <h2>🧠 AI Response</h2>
-                <pre id="response-output">
-                    The AI analysis will appear here. The style is now *friendly, concise, and point-to-point*, focusing only on the calculation results and advice.
-                </pre>
-            </div>
-            
-        </div>
     </div>
 
     <script>
         // ⚠️ WARNING: API Key is exposed in client-side code. Use a backend for production.
-        const GEMINI_API_KEY = "AIzaSyBqgrroGtY9YNz5TwrG0Tj6OHaAGVhAEGU"; // <<< REPLACE WITH YOUR KEY
+        const GEMINI_API_KEY = "AIzaSyBqgrroGtY9YNz5TwrG0Tj6OHaAGVhAEGU"; // Your Key Inserted Here
         const GEMINI_MODEL = "gemini-2.5-flash"; 
 
         // 1. SIMULATED FIREBASE DATA (Your input data structure)
@@ -295,7 +333,6 @@
             return 'safe-att';
         }
 
-        // Function to display the data on the page
         function displayData() {
             const displayDiv = document.getElementById('attendance-data-display');
             let html = `<div class="data-point"><strong>Total College Days:</strong> <span>${attendanceData.totalCollegeDays}</span></div>`;
@@ -315,7 +352,6 @@
             displayDiv.innerHTML = html;
         }
         
-        // Function to convert the data into a clear, parsable string for the AI
         function createDataPrompt() {
             let dataString = `
                 Current Attendance Performance:
@@ -331,7 +367,6 @@
             return dataString;
         }
 
-        // Function to update metric display
         function updateMetrics(rpd, cost, tokensIn, tokensOut) {
             document.getElementById('metric-rpd').innerText = rpd !== null ? `${rpd.toFixed(2)}s` : '--';
             document.getElementById('metric-cost').innerText = cost !== null ? `$${cost.toFixed(4)}` : '$0.00';
@@ -347,7 +382,7 @@
             const startTime = Date.now();
             
             if (!userPrompt || GEMINI_API_KEY === "YOUR_API_KEY_HERE") {
-                outputDiv.innerText = "🚨 Error: Please enter a question and/or replace 'YOUR_API_KEY_HERE' in the script.";
+                outputDiv.innerText = "🚨 Error: Please enter a question and/or ensure your API key is correctly inserted.";
                 return;
             }
 
@@ -357,7 +392,7 @@
             
             const dataPrompt = createDataPrompt();
 
-            // Constructing the complete prompt for the AI - **Friendly, concise, and point-to-point style enforced here**
+            // Constructing the complete prompt for the AI - Focused on concise, factual, point-to-point response
             const fullPrompt = `
                 You are a concise, friendly, and factual Attendance Best Friend AI. Your response must be:
                 1. Point-to-point (using bullet points or clear headings).
@@ -374,10 +409,10 @@
                 "${userPrompt}"
                 ---
 
-                Analyze the scenario: The student skips for 3 days and then attends for 2 days. Assume the average of 3.5 classes per day are skipped/attended across ALL subjects for the scenario calculation unless specific subject totals are relevant. Provide the new projected attendance for each subject.
+                Analyze the scenario: The student skips for 3 days and then attends for 2 days. Assume an average of 3.5 classes per day are skipped/attended across ALL subjects for this scenario (3.5 * 3 = 10.5 classes skipped; 3.5 * 2 = 7 classes attended). Provide the new projected attendance for each subject.
             `;
             
-            let tokensIn = fullPrompt.length; // Simple placeholder approximation
+            let tokensIn = fullPrompt.length; // Placeholder approximation
 
             try {
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
@@ -391,8 +426,8 @@
                         contents: [{
                             parts: [{ text: fullPrompt }]
                         }],
-                        // Request a shorter, point-to-point response
-                        config: {
+                        // *** FIXED: Renamed 'config' to 'generationConfig' to resolve the JSON error ***
+                        generationConfig: {
                             temperature: 0.1, 
                             maxOutputTokens: 500
                         }
@@ -406,11 +441,11 @@
                 let aiText = "Could not get a valid response from the AI.";
 
                 if (result.error) {
+                    // Display the specific API error message
                     aiText = `🚨 API ERROR: ${result.error.message}`;
                     console.error("API Error:", result.error);
                 } else if (result.candidates && result.candidates.length > 0) {
                     aiText = result.candidates[0].content.parts[0].text;
-                    // Attempt to get actual token count (if available in your specific setup)
                     if (result.usageMetadata) {
                          tokensIn = result.usageMetadata.promptTokenCount || tokensIn;
                          tokensOut = result.usageMetadata.candidatesTokenCount || 0;
@@ -419,8 +454,7 @@
 
                 outputDiv.innerText = aiText;
                 
-                // Update Metrics (Cost is a placeholder calculation, needs backend for accuracy)
-                // Assuming rough estimate: 0.00035 USD / 1000 tokens for flash
+                // Update Metrics (Cost is a placeholder calculation)
                 const estimatedCost = (tokensIn + tokensOut) * (0.00035 / 1000); 
                 updateMetrics(rpd, estimatedCost, tokensIn, tokensOut);
 
