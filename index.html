@@ -82,14 +82,13 @@
             font-size: 0.9em;
         }
         
-        /* SPI Placeholder Style */
         .spi-placeholder {
             padding: 10px;
             background-color: #3f3f5f;
             border-radius: 6px;
             margin-top: 10px;
             font-size: 0.9em;
-            color: #ffc107; /* Amber color */
+            color: #ffc107; 
         }
 
         .subject-list {
@@ -264,7 +263,7 @@
             <div class="output-section card">
                 <h2>🧠 AI Response</h2>
                 <pre id="response-output">
-                    The AI analysis will appear here. I'll keep the response *friendly, concise, and point-to-point*!
+                    The AI analysis will appear here. The response will be friendly, concise, and point-to-point.
                 </pre>
             </div>
         </div>
@@ -381,8 +380,8 @@
             const sendButton = document.getElementById('send-button');
             const startTime = Date.now();
             
-            if (!userPrompt || GEMINI_API_KEY === "YOUR_API_KEY_HERE") {
-                outputDiv.innerText = "🚨 Error: Please enter a question and/or ensure your API key is correctly inserted.";
+            if (!userPrompt) {
+                outputDiv.innerText = "🚨 Error: Please enter a question.";
                 return;
             }
 
@@ -392,13 +391,12 @@
             
             const dataPrompt = createDataPrompt();
 
-            // Constructing the complete prompt for the AI - Focused on concise, factual, point-to-point response
+            // Constructed prompt: Structured for Completeness and Concise Output
             const fullPrompt = `
                 You are a concise, friendly, and factual Attendance Best Friend AI. Your response must be:
-                1. Point-to-point (using bullet points or clear headings).
-                2. Short, human-like, and easy to understand.
-                3. Strictly focused on the calculation results and clear advice based on the numbers.
-                4. **Crucially**: Answer the student's question by performing the calculation for EACH subject using the current data.
+                1. Start with a brief, encouraging opener (max one sentence).
+                2. Use clear headings and bullet points for all results.
+                3. **CRITICAL INSTRUCTION**: Provide a detailed calculation summary for the scenario below for **EACH** subject listed in the data.
 
                 ---
                 STUDENT'S CURRENT ATTENDANCE DATA:
@@ -409,10 +407,20 @@
                 "${userPrompt}"
                 ---
 
-                Analyze the scenario: The student skips for 3 days and then attends for 2 days. Assume an average of 3.5 classes per day are skipped/attended across ALL subjects for this scenario (3.5 * 3 = 10.5 classes skipped; 3.5 * 2 = 7 classes attended). Provide the new projected attendance for each subject.
+                ### SCENARIO CALCULATION RULES:
+                The scenario involves 3 missed days and 2 attended days. Use an average of 3.5 classes per day for this projection:
+                - **Total Missed Classes:** 3 days * 3.5 classes/day = 10.5 classes
+                - **Total Attended Classes:** 2 days * 3.5 classes/day = 7 classes
+
+                **Perform the full calculation for each subject:**
+                New Attended = Current Attended + 7
+                New Total = Current Total + 10.5 (missed) + 7 (attended) = Current Total + 17.5
+                New Percentage = (New Attended / New Total) * 100
+
+                Output the result clearly.
             `;
             
-            let tokensIn = fullPrompt.length; // Placeholder approximation
+            let tokensIn = fullPrompt.length; 
 
             try {
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
@@ -426,10 +434,9 @@
                         contents: [{
                             parts: [{ text: fullPrompt }]
                         }],
-                        // *** FIXED: Renamed 'config' to 'generationConfig' to resolve the JSON error ***
                         generationConfig: {
                             temperature: 0.1, 
-                            maxOutputTokens: 500
+                            maxOutputTokens: 1024 
                         }
                     })
                 });
@@ -441,7 +448,6 @@
                 let aiText = "Could not get a valid response from the AI.";
 
                 if (result.error) {
-                    // Display the specific API error message
                     aiText = `🚨 API ERROR: ${result.error.message}`;
                     console.error("API Error:", result.error);
                 } else if (result.candidates && result.candidates.length > 0) {
@@ -454,7 +460,6 @@
 
                 outputDiv.innerText = aiText;
                 
-                // Update Metrics (Cost is a placeholder calculation)
                 const estimatedCost = (tokensIn + tokensOut) * (0.00035 / 1000); 
                 updateMetrics(rpd, estimatedCost, tokensIn, tokensOut);
 
@@ -462,7 +467,7 @@
                 outputDiv.innerText = `⚠️ An unexpected network error occurred: ${error.message}`;
                 console.error("Fetch Error:", error);
                 const rpd = (Date.now() - startTime) / 1000;
-                updateMetrics(rpd, 0, tokensIn, 0); // Update RPD on error
+                updateMetrics(rpd, 0, tokensIn, 0);
             } finally {
                 sendButton.disabled = false;
                 sendButton.innerText = "Get Analysis";
