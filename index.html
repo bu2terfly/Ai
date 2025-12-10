@@ -1,169 +1,548 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attendance Tracker AI Test</title>
-    <style>
-        body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f4f7f6; }
-        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
-        .data-section, .input-section, .output-section { background: #ecf0f1; padding: 15px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
-        h2 { color: #34495e; margin-top: 0; }
-        textarea, input[type="text"] { width: 95%; padding: 10px; margin-top: 5px; border: 1px solid #bdc3c7; border-radius: 4px; box-sizing: border-box; }
-        button { background-color: #3498db; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; transition: background-color 0.3s; }
-        button:hover { background-color: #2980b9; }
-        #response-output { white-space: pre-wrap; background-color: white; padding: 10px; border: 1px solid #bdc3c7; min-height: 100px; }
-        .data-point { margin-bottom: 5px; }
-        .disclaimer { margin-top: 20px; font-size: 0.8em; color: #7f8c8d; }
-    </style>
+  <meta charset="UTF-8" />
+  <title>LAM Bot • Campus AI (Groq)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #020617;
+      --bg-alt: #020617;
+      --card: #020617;
+      --border: #1f2937;
+      --accent: #22c55e;
+      --accent-soft: rgba(34,197,94,0.1);
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --bot: #111827;
+      --user: #22c55e;
+      --radius-lg: 18px;
+      --radius-sm: 10px;
+    }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+                   "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #111827 0, #020617 45%, #000 100%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      padding: 10px;
+    }
+    .app {
+      display: grid;
+      grid-template-columns: minmax(0, 280px) minmax(0, 640px);
+      gap: 12px;
+      width: 100%;
+      max-width: 980px;
+      min-height: 90vh;
+    }
+    @media (max-width: 800px) {
+      .app { grid-template-columns: 1fr; min-height: 100vh; }
+      .sidebar { display: none; }
+    }
+    .card {
+      background: rgba(15,23,42,0.85);
+      border-radius: 20px;
+      border: 1px solid rgba(31,41,55,0.8);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 18px 60px rgba(0,0,0,0.55);
+    }
+
+    /* Sidebar */
+    .sidebar {
+      padding: 14px 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.6);
+      color: var(--muted);
+    }
+    .chip-dot {
+      width: 6px; height: 6px;
+      border-radius: 999px;
+      background: #22c55e;
+      box-shadow: 0 0 10px #22c55e;
+    }
+    .sidebar-section {
+      border-radius: 16px;
+      border: 1px solid rgba(31,41,55,0.9);
+      background: radial-gradient(circle at top left,#0b1120 0,#020617 45%);
+      padding: 10px 12px;
+      font-size: 13px;
+    }
+    .sidebar-title {
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2,minmax(0,1fr));
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .pill {
+      background: rgba(15,23,42,0.75);
+      border-radius: 999px;
+      padding: 6px 9px;
+      border: 1px solid rgba(31,41,55,0.9);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      font-size:11px;
+      color:var(--muted);
+    }
+    .pill b { color: var(--text); font-weight: 600; }
+
+    .hint-list {
+      font-size: 12px;
+      color: var(--muted);
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .hint-list li::before {
+      content: "›";
+      margin-right: 6px;
+      color: var(--accent);
+    }
+
+    /* Main Chat */
+    .main {
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+    }
+    .main-header {
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      padding: 8px 10px 6px;
+      border-bottom: 1px solid rgba(31,41,55,0.8);
+    }
+    .main-title {
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+    }
+    .main-title h1 {
+      font-size: 15px;
+      font-weight: 600;
+    }
+    .main-title span {
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .status-pill {
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      border:1px solid rgba(55,65,81,0.9);
+      display:flex;
+      align-items:center;
+      gap:6px;
+      color: var(--muted);
+    }
+    .status-dot {
+      width:7px;height:7px;border-radius:999px;
+      background:#22c55e;
+      box-shadow:0 0 8px #22c55e;
+    }
+
+    .chat-wrap {
+      flex:1;
+      overflow-y:auto;
+      padding: 12px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .msg-row {
+      display:flex;
+      margin-bottom:4px;
+    }
+    .msg-row.user { justify-content:flex-end; }
+    .msg-bubble {
+      max-width: 80%;
+      padding: 9px 11px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+    }
+    .msg-user {
+      background: rgba(34,197,94,0.1);
+      border:1px solid rgba(34,197,94,0.7);
+      color:#bbf7d0;
+      border-bottom-right-radius: 2px;
+    }
+    .msg-bot {
+      background: rgba(15,23,42,0.9);
+      border: 1px solid rgba(31,41,55,0.9);
+      border-bottom-left-radius: 2px;
+    }
+    .msg-meta {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 1px;
+    }
+
+    .input-bar {
+      padding: 8px 10px 10px;
+      border-top:1px solid rgba(31,41,55,0.8);
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+    .input-row {
+      display:flex;
+      gap:8px;
+      align-items:flex-end;
+    }
+    textarea {
+      flex:1;
+      border-radius: 999px;
+      border:1px solid rgba(55,65,81,0.9);
+      padding: 9px 12px;
+      resize:none;
+      min-height:38px;
+      max-height:100px;
+      background: rgba(15,23,42,0.9);
+      color: var(--text);
+      font-size: 13px;
+    }
+    textarea:focus {
+      outline:none;
+      border-color: var(--accent);
+      box-shadow:0 0 0 1px rgba(34,197,94,0.4);
+    }
+    button {
+      border:none;
+      border-radius: 999px;
+      padding: 9px 14px;
+      font-size: 13px;
+      display:flex;
+      align-items:center;
+      gap:6px;
+      cursor:pointer;
+      background: linear-gradient(to right,#22c55e,#16a34a);
+      color:#022c22;
+      font-weight:500;
+      box-shadow:0 10px 30px rgba(16,185,129,0.45);
+      transition: transform .08s ease, box-shadow .08s ease, opacity .16s;
+    }
+    button:disabled {
+      opacity: .55;
+      cursor: default;
+      box-shadow:none;
+      transform:none;
+    }
+    button:active {
+      transform: translateY(1px) scale(0.99);
+      box-shadow:0 4px 16px rgba(16,185,129,0.35);
+    }
+    .fine-hint {
+      font-size:11px;
+      color: var(--muted);
+      display:flex;
+      justify-content:space-between;
+      gap:8px;
+    }
+    .fine-hint span:last-child { text-align:right; }
+    .kbd {
+      border-radius: 999px;
+      border:1px solid rgba(75,85,99,0.8);
+      padding:1px 7px;
+      font-size:10px;
+      color: var(--muted);
+    }
+  </style>
 </head>
 <body>
+  <div class="app">
+    <!-- SIDEBAR -->
+    <aside class="card sidebar">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span class="chip"><span class="chip-dot"></span> LAM Bot • Groq</span>
+        <span style="font-size:11px;color:var(--muted);">Campus AI</span>
+      </div>
 
-    <h1>🤖 Attendance AI Performance Analyzer</h1>
-    <p>This page tests the Gemini API with your specific attendance data.</p>
-    <hr>
-
-    <div class="data-section">
-        <h2>📊 Current Attendance Data (Simulated Firebase)</h2>
-        <div id="attendance-data-display">
-            </div>
-        <p class="disclaimer">This data will be automatically added to the AI prompt.</p>
-    </div>
-
-    <div class="input-section">
-        <h2>❓ Ask a Question</h2>
-        <input type="text" id="user-prompt" placeholder="E.g., Can I skip all classes for next 2 days?" value="If I skip 3 days then attend 2 days next what will be my percentage?" required>
-        <br><br>
-        <button onclick="sendPrompt()">Get AI Analysis</button>
-    </div>
-
-    <div class="output-section">
-        <h2>💡 AI Response</h2>
-        <div id="response-output">
-            The AI response will appear here...
+      <section class="sidebar-section">
+        <div class="sidebar-title">Student Snapshot (Demo)</div>
+        <div style="font-size:13px;line-height:1.5;">
+          <b>Rohan Sharma</b><br/>
+          ID: CS23-041 · B.Com (Hons) Sem 3<br/>
+          Section: BCOM-H A · Roll: 17
         </div>
-        <p class="disclaimer">Response generated by the Google Gemini API.</p>
-    </div>
+        <div class="stat-grid">
+          <div class="pill"><span>Overall</span><b>86%</b></div>
+          <div class="pill"><span>Micro Fin.</span><b>92%</b></div>
+          <div class="pill"><span>Bus. Law</span><b>80%</b></div>
+          <div class="pill"><span>QT</span><b>82%</b></div>
+          <div class="pill"><span>EVS</span><b>78%</b></div>
+          <div class="pill"><span>Min Req.</span><b>75%</b></div>
+        </div>
+      </section>
 
-    <script>
-        // ⚠️ WARNING: API Key is exposed in client-side code. Use a backend for production.
-        const GEMINI_API_KEY = "AIzaSyDOfQo4rmPDMRtcOXpKLJ6u5vtYmRxS0Ew"; // Your key
-        const GEMINI_MODEL = "gemini-1.5-flash"; // A fast and capable model
+      <section class="sidebar-section">
+        <div class="sidebar-title">College</div>
+        <div style="font-size:13px;line-height:1.5;margin-bottom:6px;">
+          North Hills Commerce College<br/>
+          Guwahati, Assam<br/><br/>
+          Principal: <b>Dr. Priya Mukherjee</b><br/>
+          HoD (Commerce): <b>Prof. S. K. Dutta</b>
+        </div>
+      </section>
 
-        // 1. SIMULATED FIREBASE DATA (Your input data structure)
-        const attendanceData = {
-            totalCollegeDays: 34,
-            totalClassesPerDay: "3-4", // Use a string to reflect the range given
-            subjectAttendance: {
-                "Ca": { attended: 5, total: 8 },
-                "Fm": { attended: 23, total: 27 },
-                "Geo": { attended: 31, total: 34 },
-                "Bio": { attended: 9, total: 15 },
-                "Ast": { attended: 16, total: 24 },
-                "Ut": { attended: 8, total: 10 }
-            }
-        };
+      <section class="sidebar-section">
+        <div class="sidebar-title">Try asking</div>
+        <ul class="hint-list">
+          <li>“Show my attendance summary in short.”</li>
+          <li>“If I bunk 3 days, will I be eligible?”</li>
+          <li>“Write a leave application to HoD for 2 days.”</li>
+          <li>“Explain SHG and JLG in micro finance.”</li>
+        </ul>
+      </section>
 
-        // Function to display the data on the page
-        function displayData() {
-            const displayDiv = document.getElementById('attendance-data-display');
-            let html = `<div class="data-point"><strong>Total College Days:</strong> ${attendanceData.totalCollegeDays}</div>`;
-            html += `<div class="data-point"><strong>Classes/Day:</strong> ${attendanceData.totalClassesPerDay}</div>`;
-            html += `<h3>Subject-wise:</h3><ul>`;
-            
-            for (const [subject, data] of Object.entries(attendanceData.subjectAttendance)) {
-                const percentage = ((data.attended / data.total) * 100).toFixed(2);
-                html += `<li><strong>${subject}:</strong> ${data.attended} / ${data.total} (${percentage}%)</li>`;
-            }
-            html += `</ul>`;
-            displayDiv.innerHTML = html;
-        }
-        
-        // Function to convert the data into a clear, parsable string for the AI
-        function createDataPrompt() {
-            let dataString = `
-                Current Attendance Performance:
-                - Total College Days passed: ${attendanceData.totalCollegeDays}
-                - Classes per day: ${attendanceData.totalClassesPerDay}
-                - Subject-wise Attendance (Attended/Total - Percentage):
-            `;
+      <section class="sidebar-section">
+        <div class="sidebar-title">Scope</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.5;">
+          LAM Bot focuses on:<br/>
+          • Attendance & exam eligibility<br/>
+          • College rules & leave letters<br/>
+          • Commerce & micro finance study help<br/><br/>
+          It may refuse stock tips, CV/resume, jobs, or unrelated topics.
+        </div>
+      </section>
+    </aside>
 
-            for (const [subject, data] of Object.entries(attendanceData.subjectAttendance)) {
-                const percentage = ((data.attended / data.total) * 100).toFixed(2);
-                dataString += `\n  - ${subject}: ${data.attended}/${data.total} (${percentage}%)`;
-            }
-            return dataString;
-        }
+    <!-- MAIN CHAT -->
+    <main class="card main">
+      <div class="main-header">
+        <div class="main-title">
+          <h1>LAM Bot • Campus Chat</h1>
+          <span>Powered by Groq • Model: LLaMA-3.1-8B</span>
+        </div>
+        <div class="status-pill">
+          <span class="status-dot"></span>
+          <span id="status-label">Ready</span>
+        </div>
+      </div>
 
-        // 2. MAIN FUNCTION TO CALL THE GEMINI API
-        async function sendPrompt() {
-            const userPrompt = document.getElementById('user-prompt').value;
-            const outputDiv = document.getElementById('response-output');
-            
-            if (!userPrompt) {
-                outputDiv.innerText = "Please enter a question.";
-                return;
-            }
+      <div class="chat-wrap" id="chat"></div>
 
-            outputDiv.innerText = "Processing... Please wait for the AI analysis.";
-            
-            const dataPrompt = createDataPrompt();
+      <div class="input-bar">
+        <div class="input-row">
+          <textarea id="userInput" rows="1" placeholder="Ask about attendance, exam eligibility, leave letters or micro finance..."></textarea>
+          <button id="sendBtn">
+            <span>Send</span>
+            <span>➤</span>
+          </button>
+        </div>
+        <div class="fine-hint">
+          <span><span class="kbd">↵ Enter</span> to send · <span class="kbd">Shift+Enter</span> for new line</span>
+          <span>AI may politely refuse off-topic questions.</span>
+        </div>
+      </div>
+    </main>
+  </div>
 
-            // Constructing the complete prompt for the AI
-            const fullPrompt = `
-                You are an Attendance Analysis AI for a college student. 
-                Your task is to analyze the student's current attendance data and provide a detailed, accurate response to their attendance-related question. 
-                Perform necessary calculations (e.g., projected attendance percentage) based on the input data and the student's hypothetical scenario.
+<script>
+/* ============================================================
+   1. Groq API CONFIG  (Frontend demo only — key is visible)
+   ============================================================ */
+const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
+const GROQ_MODEL   = "llama-3.1-8b";
+const GROQ_API_KEY = "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"; // ← replace for testing
 
-                ---
-                STUDENT'S CURRENT ATTENDANCE DATA:
-                ${dataPrompt}
-                ---
+/* ============================================================
+   2. Demo attendance data for Rohan
+   (Later you can replace this with Firebase data.)
+   ============================================================ */
+const demoAttendance = {
+  name: "Rohan Sharma",
+  id: "CS23-041",
+  program: "B.Com (Hons)",
+  semester: 3,
+  section: "BCOM-H A",
+  roll: 17,
+  overall: 86,
+  micro_finance: 92,
+  business_law: 80,
+  quantitative_techniques: 82,
+  evs: 78,
+  min_required: 75
+};
 
-                STUDENT'S QUESTION:
-                "${userPrompt}"
-                ---
+/* ============================================================
+   3. UI helpers
+   ============================================================ */
+const chatEl   = document.getElementById("chat");
+const inputEl  = document.getElementById("userInput");
+const sendBtn  = document.getElementById("sendBtn");
+const statusEl = document.getElementById("status-label");
 
-                Provide a clear and concise answer, including the current percentages, the projected changes, and the final percentage for the scenario. Be helpful but strictly factual based on the numbers.
-            `;
+function addMessage(text, who = "bot") {
+  const row = document.createElement("div");
+  row.className = "msg-row " + (who === "user" ? "user" : "bot");
 
-            try {
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
-                
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        contents: [{
-                            parts: [{ text: fullPrompt }]
-                        }],
-                        // Optional safety settings or generation config can be added here
-                    })
-                });
+  const bubble = document.createElement("div");
+  bubble.className = "msg-bubble " + (who === "user" ? "msg-user" : "msg-bot");
+  bubble.innerText = text;
 
-                const result = await response.json();
+  row.appendChild(bubble);
+  chatEl.appendChild(row);
+  chatEl.scrollTop = chatEl.scrollHeight;
+  return bubble;
+}
 
-                if (result.error) {
-                    outputDiv.innerText = `ERROR: ${result.error.message}`;
-                    console.error("API Error:", result.error);
-                } else if (result.candidates && result.candidates.length > 0) {
-                    const aiText = result.candidates[0].content.parts[0].text;
-                    outputDiv.innerText = aiText;
-                } else {
-                    outputDiv.innerText = "Could not get a valid response from the AI. Check network or API key/quota.";
-                }
+/* ============================================================
+   4. Prompt builder with logic: when & how to use attendance
+   ============================================================ */
+function buildPrompt(userQuestion) {
+  const s = userQuestion.toLowerCase();
+  // Light local check: is this likely attendance-related?
+  const attendanceKeywords = [
+    "attendance","attend","bunk","miss","percentage","percent",
+    "eligible","eligibility","exam","detain","defaulter","shortage",
+    "class","present","absent","leave","hod","principal"
+  ];
+  const isAttendanceQuestion = attendanceKeywords.some(k => s.includes(k));
 
-            } catch (error) {
-                outputDiv.innerText = `An unexpected error occurred: ${error.message}`;
-                console.error("Fetch Error:", error);
-            }
-        }
+  const header = `You are "LAM Bot", a college assistant for North Hills Commerce College.
+Your job is to answer in simple, short, point-to-point English. Prefer 3–6 bullet points or 1–3 short paragraphs.`;
 
-        // Initialize the page display
-        window.onload = displayData;
-    </script>
+  const logicBlock = `
+Decision logic:
+1. First, read the user's question and decide if it is about attendance, exam eligibility, leave related to attendance, or college rules.
+2. If it IS about attendance, exams, classes missed, bunking, or leave for college:
+   - Use the AttendanceData block to reason.
+   - Use the minimum required percentage to decide eligibility.
+3. If it is about commerce or micro finance study topics (e.g., SHG, JLG, microfinance concepts):
+   - Ignore the attendance data.
+   - Give a short academic explanation.
+4. If it is clearly outside college/attendance/micro finance (for example stock market tips, jobs, CV/resume, personal relationships, politics, etc.):
+   - Do NOT use or mention the AttendanceData.
+   - Reply exactly:
+     "I can only help with our college attendance, exam eligibility, leave letters and commerce/micro finance study questions."
+   - Do not answer the off-topic content.`;
 
+  const attendanceBlock = `
+AttendanceData (for Rohan, demo):
+- Name: ${demoAttendance.name}
+- ID: ${demoAttendance.id}
+- Program: ${demoAttendance.program}, Semester ${demoAttendance.semester}, Section ${demoAttendance.section}, Roll ${demoAttendance.roll}
+- Overall attendance: ${demoAttendance.overall}%
+- Micro Finance: ${demoAttendance.micro_finance}%
+- Business Law: ${demoAttendance.business_law}%
+- Quantitative Techniques: ${demoAttendance.quantitative_techniques}%
+- EVS: ${demoAttendance.evs}%
+- Minimum required per subject to sit for exam: ${demoAttendance.min_required}%
+
+Use this data ONLY when the question is about attendance, classes, bunking, or exam eligibility. Never invent numbers that are not present here.`;
+
+  const userBlock = `
+User question:
+"${userQuestion}"
+
+Now answer as LAM Bot, following the decision logic very strictly.`;
+
+  // We always send attendanceBlock, but the model is instructed when to use it.
+  const fullPrompt = [
+    header,
+    logicBlock,
+    attendanceBlock,
+    userBlock
+  ].join("\n\n");
+
+  return { fullPrompt, isAttendanceQuestion };
+}
+
+/* ============================================================
+   5. Call Groq API (Chat Completions)
+   ============================================================ */
+async function callGroq(promptText) {
+  const res = await fetch(GROQ_API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + GROQ_API_KEY
+    },
+    body: JSON.stringify({
+      model: GROQ_MODEL,
+      messages: [
+        { role: "system", content: "You are LAM Bot, a helpful and strict college assistant." },
+        { role: "user",   content: promptText }
+      ]
+    })
+  });
+
+  const data = await res.json();
+  if (!res.ok) {
+    const msg = data?.error?.message || ("HTTP " + res.status);
+    throw new Error(msg);
+  }
+  const reply = data.choices?.[0]?.message?.content?.trim();
+  return reply || "I couldn't generate a response right now.";
+}
+
+/* ============================================================
+   6. Send handler
+   ============================================================ */
+async function handleSend() {
+  const text = inputEl.value.trim();
+  if (!text) return;
+  inputEl.value = "";
+  const userBubble = addMessage(text, "user");
+  const botBubble  = addMessage("Thinking...", "bot");
+  sendBtn.disabled = true;
+  statusEl.textContent = "Thinking...";
+
+  try {
+    const { fullPrompt } = buildPrompt(text);
+    const reply = await callGroq(fullPrompt);
+    botBubble.innerText = reply;
+  } catch (err) {
+    console.error(err);
+    botBubble.innerText = "Error talking to AI: " + err.message;
+  } finally {
+    sendBtn.disabled = false;
+    statusEl.textContent = "Ready";
+    chatEl.scrollTop = chatEl.scrollHeight;
+  }
+}
+
+/* ============================================================
+   7. Event listeners & initial welcome message
+   ============================================================ */
+sendBtn.addEventListener("click", handleSend);
+
+inputEl.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    handleSend();
+  }
+});
+
+// Initial greeting
+addMessage(
+  "Hi, I’m LAM Bot.\n\nI can help you with:\n• Your attendance & exam eligibility\n• College rules and leave applications\n• Commerce & micro finance study doubts\n\nI may refuse questions about things like stock market tips, jobs or personal life.",
+  "bot"
+);
+</script>
 </body>
 </html>
