@@ -1,1006 +1,159 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <title>Campus AI • Attendance Assistant</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <style>
-        /* ===== Global Reset ===== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --bg-main: #343541;
-            --bg-sidebar: #202123;
-            --bg-input: #40414f;
-            --bg-user: #343541;
-            --bg-assistant: #444654;
-            --bg-chip: rgba(217, 217, 227, 0.08);
-
-            --border-subtle: rgba(255, 255, 255, 0.08);
-            --text-primary: #ececf1;
-            --text-secondary: #acacbe;
-            --accent: #10a37f;
-            --accent-hover: #0e8f70;
-            --danger: #ef4444;
-        }
-
-        body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
-                "Segoe UI", sans-serif;
-            background-color: #000;
-            color: var(--text-primary);
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* ===== Layout ===== */
-        .app {
-            display: flex;
-            height: 100vh;
-            width: 100vw;
-        }
-
-        .sidebar {
-            width: 260px;
-            background-color: var(--bg-sidebar);
-            display: flex;
-            flex-direction: column;
-            border-right: 1px solid var(--border-subtle);
-        }
-
-        .main {
-            flex: 1;
-            background-color: var(--bg-main);
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* ===== Sidebar ===== */
-        .sidebar-header {
-            padding: 12px;
-            border-bottom: 1px solid var(--border-subtle);
-        }
-
-        .new-chat-btn {
-            width: 100%;
-            padding: 10px 12px;
-            border-radius: 6px;
-            border: 1px solid var(--border-subtle);
-            background: transparent;
-            color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .new-chat-btn span.icon {
-            display: inline-flex;
-            height: 20px;
-            width: 20px;
-            align-items: center;
-            justify-content: center;
-            border-radius: 4px;
-            border: 1px solid var(--border-subtle);
-        }
-
-        .new-chat-btn:hover {
-            background-color: rgba(255, 255, 255, 0.04);
-        }
-
-        .sidebar-section-title {
-            padding: 10px 12px 4px;
-            font-size: 11px;
-            text-transform: uppercase;
-            color: var(--text-secondary);
-            letter-spacing: 0.06em;
-        }
-
-        .sidebar-scroll {
-            flex: 1;
-            overflow-y: auto;
-        }
-
-        .sidebar-card {
-            margin: 6px 8px;
-            padding: 10px;
-            border-radius: 8px;
-            background-color: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--border-subtle);
-            font-size: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .sidebar-card-title {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .sidebar-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 2px 8px;
-            border-radius: 999px;
-            background-color: var(--bg-chip);
-            font-size: 11px;
-            color: var(--text-secondary);
-        }
-
-        .sidebar-meta {
-            font-size: 11px;
-            color: var(--text-secondary);
-            line-height: 1.4;
-        }
-
-        .sidebar-footer {
-            border-top: 1px solid var(--border-subtle);
-            padding: 10px;
-            font-size: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .sidebar-footer-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 6px;
-            color: var(--text-secondary);
-        }
-
-        .avatar-circle {
-            height: 24px;
-            width: 24px;
-            border-radius: 999px;
-            background: linear-gradient(135deg, #10a37f, #7c3aed);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .tag {
-            padding: 2px 8px;
-            border-radius: 999px;
-            border: 1px solid var(--border-subtle);
-            font-size: 11px;
-        }
-
-        /* ===== Main Header ===== */
-        .main-header {
-            height: 52px;
-            border-bottom: 1px solid var(--border-subtle);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 16px;
-        }
-
-        .main-title {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .main-title-pill {
-            font-size: 11px;
-            padding: 2px 8px;
-            border-radius: 999px;
-            background-color: var(--bg-chip);
-            color: var(--text-secondary);
-        }
-
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 12px;
-            color: var(--text-secondary);
-        }
-
-        /* ===== Chat Area ===== */
-        .chat-wrapper {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px 0 90px;
-        }
-
-        .chat-inner {
-            max-width: 780px;
-            margin: 0 auto;
-            padding: 0 12px;
-        }
-
-        .welcome-block {
-            padding: 12px 12px 16px;
-            text-align: left;
-        }
-
-        .welcome-title {
-            font-size: 22px;
-            font-weight: 600;
-            margin-bottom: 6px;
-        }
-
-        .welcome-subtitle {
-            font-size: 13px;
-            color: var(--text-secondary);
-        }
-
-        .chips-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-top: 10px;
-        }
-
-        .chip {
-            font-size: 12px;
-            padding: 6px 10px;
-            border-radius: 999px;
-            background-color: var(--bg-chip);
-            color: var(--text-secondary);
-            border: 1px solid var(--border-subtle);
-            cursor: pointer;
-        }
-
-        .chip:hover {
-            background-color: rgba(255, 255, 255, 0.06);
-            color: var(--text-primary);
-        }
-
-        /* ===== Messages ===== */
-        .message {
-            display: flex;
-            gap: 10px;
-            padding: 14px 12px;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
-        .message.user {
-            background-color: var(--bg-user);
-        }
-
-        .message.assistant {
-            background-color: var(--bg-assistant);
-        }
-
-        .message-avatar {
-            height: 26px;
-            width: 26px;
-            border-radius: 999px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 13px;
-        }
-
-        .message.user .message-avatar {
-            background-color: #2f80ed;
-        }
-
-        .message.assistant .message-avatar {
-            background: linear-gradient(135deg, #10a37f, #7c3aed);
-        }
-
-        .message-content {
-            flex: 1;
-        }
-
-        .message-role {
-            font-size: 11px;
-            color: var(--text-secondary);
-            margin-bottom: 4px;
-        }
-
-        .message-text p + p {
-            margin-top: 4px;
-        }
-
-        .typing-indicator {
-            display: inline-flex;
-            gap: 3px;
-            align-items: center;
-        }
-
-        .dot {
-            height: 4px;
-            width: 4px;
-            border-radius: 999px;
-            background-color: var(--text-secondary);
-            animation: blink 1s infinite ease-in-out;
-        }
-
-        .dot:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-
-        .dot:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-
-        @keyframes blink {
-            0%, 80%, 100% {
-                opacity: 0.3;
-            }
-            40% {
-                opacity: 1;
-            }
-        }
-
-        /* ===== Input Area ===== */
-        .input-bar-wrap {
-            position: fixed;
-            bottom: 0;
-            left: 260px;
-            right: 0;
-            background: linear-gradient(to top, #343541, transparent);
-            padding: 10px 0 12px;
-        }
-
-        .input-bar-inner {
-            max-width: 780px;
-            margin: 0 auto;
-            padding: 0 12px;
-        }
-
-        .input-shell {
-            background-color: var(--bg-input);
-            border-radius: 16px;
-            border: 1px solid var(--border-subtle);
-            display: flex;
-            align-items: flex-end;
-            padding: 6px;
-            gap: 6px;
-        }
-
-        .input-shell textarea {
-            flex: 1;
-            resize: none;
-            border: none;
-            outline: none;
-            background: transparent;
-            color: var(--text-primary);
-            font-size: 14px;
-            max-height: 120px;
-            min-height: 20px;
-        }
-
-        .input-shell textarea::placeholder {
-            color: var(--text-secondary);
-        }
-
-        .send-btn {
-            height: 32px;
-            width: 32px;
-            border-radius: 999px;
-            border: none;
-            cursor: pointer;
-            background-color: var(--accent);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .send-btn:hover {
-            background-color: var(--accent-hover);
-        }
-
-        .send-btn svg {
-            height: 14px;
-            width: 14px;
-            fill: #fff;
-        }
-
-        .input-hint {
-            font-size: 11px;
-            color: var(--text-secondary);
-            margin-top: 4px;
-        }
-
-        /* ===== Small Screens ===== */
-        @media (max-width: 768px) {
-            .sidebar {
-                display: none;
-            }
-
-            .input-bar-wrap {
-                left: 0;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Campus AI • College Assistant</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <style>
+    body { margin:0; font-family:system-ui; background:#343541; color:#fff }
+    .app { display:flex; height:100vh }
+    .sidebar { width:260px; background:#202123; padding:10px }
+    .main { flex:1; display:flex; flex-direction:column }
+    .header { padding:12px; border-bottom:1px solid #444 }
+    .chat { flex:1; overflow-y:auto; padding:12px }
+    .msg { padding:10px; margin-bottom:10px; border-radius:8px }
+    .user { background:#2f80ed }
+    .bot { background:#444654 }
+    .input { display:flex; padding:10px; border-top:1px solid #444 }
+    textarea { flex:1; background:#40414f; color:#fff; border:none; padding:10px; border-radius:8px }
+    button { margin-left:6px; padding:10px 14px; background:#10a37f; border:none; color:#fff; border-radius:8px }
+    .info { font-size:13px; opacity:0.8; margin-top:6px }
+  </style>
 </head>
 <body>
+
 <div class="app">
-    <!-- ===== LEFT SIDEBAR ===== -->
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <button class="new-chat-btn" id="newChatBtn">
-                <span class="icon">+</span>
-                <span>New chat</span>
-            </button>
-        </div>
+  <div class="sidebar">
+    <h3>Student Info</h3>
+    <div class="info">
+      Name: Rohan Sharma <br>
+      ID: CS23-041 <br>
+      Class: B.Com (Hons) Sem-3 <br>
+      Attendance: 86% Overall
+    </div>
 
-        <div class="sidebar-scroll">
-            <!-- Rohan Info Card -->
-            <div class="sidebar-section-title">Student snapshot</div>
-            <div class="sidebar-card">
-                <div class="sidebar-card-title">Rohan Sharma</div>
-                <div class="sidebar-meta">
-                    <strong>ID:</strong> CS23-041<br />
-                    <strong>Program:</strong> B.Com (Hons.) – 3rd Semester<br />
-                    <strong>Class:</strong> BCOM-H A (Roll 17)<br />
-                    <strong>DOB:</strong> 14 Oct 2005
-                </div>
-                <div class="sidebar-meta" style="margin-top:6px;">
-                    <strong>Attendance (Last 30 days)</strong><br />
-                    Overall: 86%<br />
-                    Micro Finance: 92% (23/25 classes)<br />
-                    Business Law: 80% (20/25 classes)<br />
-                    Quantitative Techniques: 82% (21/26 classes)
-                </div>
-                <div class="sidebar-pill" style="margin-top:6px;">
-                    🎯 Status: Allowed for sessional exams
-                </div>
-            </div>
+    <h3 style="margin-top:15px">College</h3>
+    <div class="info">
+      North Hills Commerce College <br>
+      Principal: Dr. Priya Mukherjee <br>
+      HoD: Prof. S. K. Dutta
+    </div>
+  </div>
 
-            <!-- College Info Card -->
-            <div class="sidebar-section-title">College</div>
-            <div class="sidebar-card">
-                <div class="sidebar-card-title">North Hills Commerce College</div>
-                <div class="sidebar-meta">
-                    City: Guwahati, Assam<br />
-                    Affiliation: Assam University (Autonomous)<br />
-                    Type: Student-driven attendance & mentoring
-                </div>
-                <div class="sidebar-meta" style="margin-top:6px;">
-                    <strong>Attendance Rules</strong><br />
-                    • Min 75% per subject to sit for end-sem exams<br />
-                    • Below 65% ⇒ written undertaking + mentor review<br />
-                    • 65–74% ⇒ need HoD approval for exam form
-                </div>
-            </div>
+  <div class="main">
+    <div class="header">Campus AI – College Academic Assistant</div>
+    <div class="chat" id="chat"></div>
 
-            <!-- Micro Finance Info Card -->
-            <div class="sidebar-section-title">Knowledge pack</div>
-            <div class="sidebar-card">
-                <div class="sidebar-card-title">Micro Finance – Quick facts</div>
-                <div class="sidebar-meta">
-                    • Focus: small loans, savings & insurance for low-income
-                    households.<br />
-                    • Models: SHG–Bank Linkage, Joint Liability Group,
-                    MFI–NBFC.<br />
-                    • Key metrics: repayment rate, portfolio at risk (PAR),
-                    operating expense ratio, financial inclusion index.<br />
-                    • Risks: over-indebtedness, high interest, group pressure,
-                    mission drift.
-                </div>
-                <div class="sidebar-pill" style="margin-top:6px;">
-                    Ask: “Explain PAR in microfinance in 3 bullet points”
-                </div>
-            </div>
-        </div>
-
-        <!-- Footer -->
-        <div class="sidebar-footer">
-            <div class="sidebar-footer-row">
-                <div style="display:flex;align-items:center;gap:6px;">
-                    <div class="avatar-circle">AI</div>
-                    <div>
-                        <div style="font-size:12px;">Campus AI</div>
-                        <div style="font-size:11px;color:var(--text-secondary);">
-                            Rohan’s attendance assistant
-                        </div>
-                    </div>
-                </div>
-                <span class="tag">Beta</span>
-            </div>
-            <div class="sidebar-footer-row">
-                <span>Powered by Gemini</span>
-                <span style="font-size:11px;">Demo mode</span>
-            </div>
-        </div>
-    </aside>
-
-    <!-- ===== MAIN AREA ===== -->
-    <main class="main">
-        <!-- Header -->
-        <header class="main-header">
-            <div class="main-title">
-                Campus AI
-                <span class="main-title-pill">Student • Rohan • B.Com (Hons.)</span>
-            </div>
-            <div class="header-right">
-                <span id="statusBubble">Ready</span>
-            </div>
-        </header>
-
-        <!-- Chat Messages -->
-        <section class="chat-wrapper" id="chatWrapper">
-            <div class="chat-inner" id="chatInner">
-                <!-- Welcome Block -->
-                <div class="welcome-block">
-                    <div class="welcome-title">Hi Rohan 👋</div>
-                    <div class="welcome-subtitle">
-                        Ask about your attendance, college rules, or micro finance topics.
-                        I’ll keep answers short and clear.
-                    </div>
-                    <div class="chips-row">
-                        <button class="chip" data-prompt="Show my subject-wise attendance in simple points.">
-                            Show my attendance summary
-                        </button>
-                        <button class="chip" data-prompt="Will I be allowed for micro finance sessional exam with 92% attendance?">
-                            Am I eligible for exams?
-                        </button>
-                        <button class="chip" data-prompt="Explain micro finance in 4 bullet points only.">
-                            Explain micro finance (short)
-                        </button>
-                        <button class="chip" data-prompt="What is the minimum attendance required in my college? Answer in 3 bullet points.">
-                            College attendance rule
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Initial assistant message -->
-                <div class="message assistant">
-                    <div class="message-avatar">AI</div>
-                    <div class="message-content">
-                        <div class="message-role">Campus AI</div>
-                        <div class="message-text">
-                            <p>
-                                I know details about <strong>Rohan</strong>, his class,
-                                attendance, basic college rules and core concepts of
-                                micro finance. Ask your doubts in normal language —
-                                I’ll reply point-to-point, not too long.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Input Bar -->
-        <div class="input-bar-wrap">
-            <div class="input-bar-inner">
-                <div class="input-shell">
-                    <textarea
-                        id="userInput"
-                        rows="1"
-                        placeholder="Message Campus AI about attendance, college or micro finance..."
-                    ></textarea>
-                    <button class="send-btn" id="sendBtn" aria-label="Send message">
-                        <svg viewBox="0 0 24 24">
-                            <path d="M4 4l16 8-16 8 4-8-4-8z"></path>
-                        </svg>
-                    </button>
-                </div>
-                <div class="input-hint">
-                    Responses are AI-generated for demo only. Keep questions short for
-                    best results.
-                </div>
-            </div>
-        </div>
-    </main>
+    <div class="input">
+      <textarea id="input" placeholder="Ask about attendance, college, HoD, exams, micro finance..."></textarea>
+      <button onclick="send()">Send</button>
+    </div>
+  </div>
 </div>
 
 <script>
-    // ============== CONFIG ==============
-    const GEMINI_API_KEY = "AIzaSyDOfQo4rmPDMRtcOXpKLJ6u5vtYmRxS0Ew"; // <-- put your key here
-    const GEMINI_MODEL_PATH =
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-latest:generateContent";
+/* ===================== CONFIG ===================== */
+const GEMINI_API_KEY = "AIzaSyDOfQo4rmPDMRtcOXpKLJ6u5vtYmRxS0Ew";
 
-    // ============== KNOWLEDGE BASE ==============
-    // This context is injected into every call so Gemini can answer
-    // questions about Rohan, college rules and micro finance.
-    const KNOWLEDGE_BASE = `
-You are "Campus AI", an assistant for North Hills Commerce College.
+/* ===================== DOMAIN GATE ===================== */
+function isAllowed(q) {
+  q = q.toLowerCase();
 
-Student profile (demo):
-- Name: Rohan Sharma
-- Student ID: CS23-041
-- Program: Bachelor of Commerce (Honours)
-- Specialization: Banking & Micro Finance
-- Semester: 3rd Semester
-- Class: BCOM-H A
-- Roll number: 17
-- Date of birth: 14 October 2005
-- Academic year: 2025–26
-- Contact (demo): rohan.sharma@example.edu (do not reveal unless directly asked)
+  const blocked = ["stock", "share", "crypto", "bitcoin", "trading", "cv", "resume", "job", "investment", "news", "politics"];
+  for (let b of blocked) if (q.includes(b)) return false;
 
-Attendance snapshot (last 30 days, demo):
-- Overall attendance: 86% (all theory subjects combined)
-- Micro Finance:
-  - Faculty: Prof. Ananya Das
-  - Classes conducted: 25
-  - Classes attended: 23
-  - Attendance: 92%
-- Business Law:
-  - Faculty: Prof. Rajiv Borah
-  - Classes conducted: 25
-  - Classes attended: 20
-  - Attendance: 80%
-- Quantitative Techniques:
-  - Faculty: Prof. Meera Paul
-  - Classes conducted: 26
-  - Classes attended: 21
-  - Attendance: 82%
-- Environmental Studies:
-  - Classes conducted: 18
-  - Classes attended: 14
-  - Attendance: 78%
+  const allowed = ["attendance","college","principal","hod","exam","leave","micro","finance","mfi","shg","jlg","bcom","rohan"];
+  for (let a of allowed) if (q.includes(a)) return true;
 
-College information (demo):
-- College name: North Hills Commerce College
-- Location: Guwahati, Assam, India
-- Affiliation: Assam University (Autonomous college)
-- System: CBCS with continuous evaluation, student-driven attendance tracking.
-- Attendance rules:
-  1. Minimum 75% attendance in each subject is required to appear in the end-semester university examination.
-  2. Students with 65–74% attendance may be allowed with special permission from the Head of the Department and a genuine reason.
-  3. Students below 65% must give a written undertaking and usually are not allowed to sit for university exams.
-  4. Medical leave can be considered if valid documents are submitted within 7 days.
-  5. For internal (sessional) exams, the department expects at least 70% attendance in that subject.
+  return false;
+}
 
-- Internal assessment:
-  - 20% of marks from internal tests, assignments, and class participation.
-  - 80% from end-semester university examination.
+/* ===================== UI ===================== */
+const chat = document.getElementById("chat");
+const input = document.getElementById("input");
 
-Basic micro finance knowledge (demo):
-- Definition:
-  - Micro finance provides small, collateral-free financial services (loans, savings, insurance, remittances) to low-income individuals and micro-entrepreneurs who lack access to formal banking.
-- Main models in India:
-  1. Self-Help Group (SHG) – Bank Linkage: groups of 10–20 women save regularly, build a track record, then receive bank credit as a group.
-  2. Joint Liability Group (JLG): 4–10 members mutually guarantee each other’s loans; commonly used in agricultural and rural credit.
-  3. Micro Finance Institutions (MFIs): specialised NBFCs or societies that give micro-loans, often at slightly higher interest rates to cover operating costs.
+function add(text, cls) {
+  const div = document.createElement("div");
+  div.className = "msg " + cls;
+  div.innerText = text;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
 
-- Key terms:
-  - Portfolio at Risk (PAR): the percentage of total loan portfolio that is overdue beyond a specific number of days (e.g., PAR>30 means loans overdue by more than 30 days). Higher PAR indicates higher credit risk.
-  - Repayment rate: percentage of total disbursed loans that are paid back on schedule.
-  - Financial inclusion: process of ensuring access to useful and affordable financial products and services for vulnerable groups at a reasonable cost.
-  - Group lending: loans given to groups rather than individuals; group members support and monitor each other.
+/* ===================== PROMPT ===================== */
+function buildPrompt(userQ) {
+return `
+You are Campus AI for North Hills Commerce College.
 
-- Advantages of micro finance (short):
-  1. Helps low-income borrowers start or grow micro-businesses.
-  2. Encourages savings discipline and financial literacy.
-  3. Supports women’s empowerment through SHGs.
-  4. Can stabilise household income and reduce dependence on moneylenders.
+Student:
+Rohan Sharma (B.Com Hons, Sem 3)
+Attendance:
+Micro Finance 92%
+Business Law 80%
+QT 82%
+Overall 86%
 
-- Risks and criticisms:
-  1. Over-indebtedness when borrowers take multiple loans from different lenders.
-  2. High effective interest rates due to administrative costs.
-  3. Pressure in group lending when one member cannot repay.
-  4. Mission drift: MFIs focusing more on profits than on social impact.
+College:
+Principal: Dr. Priya Mukherjee
+HoD: Prof. S. K. Dutta
 
-How to answer:
-- Always act as a real AI assistant, not a static FAQ.
-- Use only a few clear bullet points or short paragraphs (point-to-point).
-- If the question is about attendance:
-  - Refer to Rohan’s data above.
-  - Relate it to college rules.
-  - Clearly state if he is “safe”, “borderline”, or “at risk” for exams.
-- If the question is about the college:
-  - Use the college rules and information above.
-- If the question is about micro finance:
-  - Give short conceptual explanations with simple examples.
-- If the question is outside this scope:
-  - Say you only know Rohan’s attendance, college rules and micro finance basics in this demo.
+Rules:
+Minimum 75% attendance required.
+
+Scope:
+✅ Attendance, college info, principal, HoD
+✅ Leave applications to HoD/Principal
+✅ Commerce & Micro Finance only
+❌ Stock tips, crypto, jobs, CVs, other colleges
+
+Style:
+Point-to-point, short, human-like.
+
+Question:
+${userQ}
 `;
+}
 
-    // ============== STATE ==============
-    const chatInner = document.getElementById("chatInner");
-    const chatWrapper = document.getElementById("chatWrapper");
-    const userInput = document.getElementById("userInput");
-    const sendBtn = document.getElementById("sendBtn");
-    const statusBubble = document.getElementById("statusBubble");
-    const newChatBtn = document.getElementById("newChatBtn");
-    const chips = document.querySelectorAll(".chip");
-
-    // Conversation history for better answers
-    const conversation = []; // { role: "user" | "assistant", text: string }
-
-    // ============== UI HELPERS ==============
-    function addMessage(role, text, isTyping = false) {
-        const msg = document.createElement("div");
-        msg.className = "message " + role;
-
-        const avatar = document.createElement("div");
-        avatar.className = "message-avatar";
-        avatar.textContent = role === "user" ? "R" : "AI";
-
-        const content = document.createElement("div");
-        content.className = "message-content";
-
-        const roleLabel = document.createElement("div");
-        roleLabel.className = "message-role";
-        roleLabel.textContent = role === "user" ? "You" : "Campus AI";
-
-        const textDiv = document.createElement("div");
-        textDiv.className = "message-text";
-
-        if (isTyping) {
-            const indicator = document.createElement("div");
-            indicator.className = "typing-indicator";
-            indicator.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
-            textDiv.appendChild(indicator);
-        } else {
-            // Basic text-to-HTML (paragraphs only)
-            text.split("\n").forEach((line) => {
-                const p = document.createElement("p");
-                p.textContent = line;
-                textDiv.appendChild(p);
-            });
-        }
-
-        content.appendChild(roleLabel);
-        content.appendChild(textDiv);
-
-        msg.appendChild(avatar);
-        msg.appendChild(content);
-
-        chatInner.appendChild(msg);
-        scrollToBottom();
-
-        return msg; // return node so we can replace typing indicator later
+/* ===================== GEMINI CALL ===================== */
+async function callAI(q) {
+  const res = await fetch(
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=" + GEMINI_API_KEY,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: buildPrompt(q) }] }]
+      })
     }
+  );
 
-    function scrollToBottom() {
-        // small delay to ensure layout updated
-        setTimeout(() => {
-            chatWrapper.scrollTop = chatWrapper.scrollHeight + 200;
-        }, 50);
-    }
+  const data = await res.json();
+  return data.candidates[0].content.parts[0].text;
+}
 
-    function setStatus(text) {
-        statusBubble.textContent = text;
-    }
+/* ===================== SEND FUNCTION ===================== */
+async function send() {
+  const q = input.value.trim();
+  if (!q) return;
+  input.value = "";
 
-    // ============== PROMPT BUILDING ==============
-    function buildPrompt(userText) {
-        const historyText = conversation
-            .map((msg) => {
-                const label = msg.role === "user" ? "User" : "Assistant";
-                return label + ": " + msg.text;
-            })
-            .join("\n");
+  add(q, "user");
 
-        // Short, point-to-point instructions
-        const STYLE_INSTRUCTIONS = `
-Style guidelines (very important):
-- Answer in 3–6 short bullet points or 1–3 short paragraphs.
-- Be direct, simple and friendly.
-- Do not write long essays.
-- Do not repeat the full question back.
-- If information is missing, say that clearly in one short line.
-`;
+  if (!isAllowed(q)) {
+    add("I am only designed for our college, attendance & micro finance study. Other topics are not allowed here.", "bot");
+    return;
+  }
 
-        return `
-${KNOWLEDGE_BASE}
+  add("Thinking...", "bot");
 
-${STYLE_INSTRUCTIONS}
-
-Conversation so far:
-${historyText}
-
-User: ${userText}
-Assistant (Campus AI):
-`;
-    }
-
-    // ============== GEMINI CALL ==============
-    async function callGemini(userText) {
-        const prompt = buildPrompt(userText);
-
-        if (!GEMINI_API_KEY || GEMINI_API_KEY === "YOUR_GEMINI_API_KEY_HERE") {
-            // No key: return local dummy answer
-            return localFallbackAnswer(userText);
-        }
-
-        try {
-            const body = {
-                contents: [
-                    {
-                        parts: [{ text: prompt }],
-                    },
-                ],
-            };
-
-            const url = GEMINI_MODEL_PATH + "?key=" + encodeURIComponent(GEMINI_API_KEY);
-
-            const res = await fetch(url, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(body),
-            });
-
-            if (!res.ok) {
-                console.warn("Gemini API error status:", res.status);
-                return localFallbackAnswer(userText);
-            }
-
-            const data = await res.json();
-
-            const candidate =
-                data?.candidates && data.candidates.length > 0
-                    ? data.candidates[0]
-                    : null;
-
-            const text =
-                candidate?.content?.parts && candidate.content.parts.length > 0
-                    ? candidate.content.parts.map((p) => p.text || "").join("\n")
-                    : null;
-
-            if (!text || text.trim() === "") {
-                return localFallbackAnswer(userText);
-            }
-
-            return text.trim();
-        } catch (err) {
-            console.error("Error calling Gemini:", err);
-            return localFallbackAnswer(userText);
-        }
-    }
-
-    // ============== LOCAL FALLBACK (NO API / ERROR) ==============
-    function localFallbackAnswer(userText) {
-        // Very simple rule-based responses so the demo still feels alive.
-        const lower = userText.toLowerCase();
-
-        if (lower.includes("attendance") && lower.includes("micro")) {
-            return [
-                "Here’s a quick view:",
-                "- Micro Finance attendance: 92% (23/25 classes).",
-                "- College minimum per subject: 75%.",
-                "- You are safe for Micro Finance exams in this demo data.",
-            ].join("\n");
-        }
-
-        if (lower.includes("attendance")) {
-            return [
-                "Based on the demo data:",
-                "- Overall attendance: 86%.",
-                "- Micro Finance: 92%, Business Law: 80%, QT: 82%, EVS: 78%.",
-                "- You are generally safe, but keep EVS and Law above 75%.",
-            ].join("\n");
-        }
-
-        if (lower.includes("eligible") || lower.includes("exam")) {
-            return [
-                "Exam eligibility (demo rules):",
-                "- College minimum: 75% attendance in each subject.",
-                "- Rohan’s key subjects are above 75% in this dataset.",
-                "- So he is shown as eligible for end-semester exams here.",
-            ].join("\n");
-        }
-
-        if (lower.includes("micro finance") || lower.includes("microfinance")) {
-            return [
-                "Short micro finance recap:",
-                "- Small, collateral-free loans and savings for low-income groups.",
-                "- Uses SHGs, JLGs and MFIs to reach people without banks.",
-                "- Focus on financial inclusion and women’s empowerment.",
-                "- Key risk: over-indebtedness and high effective interest rates.",
-            ].join("\n");
-        }
-
-        if (lower.includes("par") || lower.includes("portfolio at risk")) {
-            return [
-                "Portfolio at Risk (PAR) in micro finance:",
-                "- Shows % of loan amount that is overdue beyond a set number of days.",
-                "- Example: PAR>30 = share of loans overdue by more than 30 days.",
-                "- Higher PAR = higher credit risk for the MFI.",
-            ].join("\n");
-        }
-
-        if (lower.includes("rule") || lower.includes("minimum attendance")) {
-            return [
-                "Attendance rules (demo):",
-                "- Need 75% per subject to sit for end-semester exams.",
-                "- 65–74% may need HoD permission and valid reason.",
-                "- Below 65% usually not allowed for exams, needs written undertaking.",
-            ].join("\n");
-        }
-
-        // Generic fallback
-        return [
-            "I’m running in offline demo mode:",
-            "- I know Rohan’s sample attendance, basic college rules, and micro finance basics.",
-            "- Ask specifically about any of these, and I’ll answer in short points.",
-        ].join("\n");
-    }
-
-    // ============== SEND HANDLER ==============
-    async function handleSend(textFromChip = null) {
-        const text = textFromChip ?? userInput.value.trim();
-        if (!text) return;
-
-        userInput.value = "";
-        userInput.style.height = "20px";
-
-        // Add user message
-        addMessage("user", text);
-        conversation.push({ role: "user", text });
-
-        // Add typing indicator for assistant
-        const typingNode = addMessage("assistant", "", true);
-        setStatus("Thinking…");
-
-        const reply = await callGemini(text);
-
-        // Replace typing indicator with actual text
-        const msgTextDiv = typingNode.querySelector(".message-text");
-        msgTextDiv.innerHTML = "";
-        reply.split("\n").forEach((line) => {
-            const p = document.createElement("p");
-            p.textContent = line;
-            msgTextDiv.appendChild(p);
-        });
-
-        conversation.push({ role: "assistant", text: reply });
-        setStatus("Ready");
-        scrollToBottom();
-    }
-
-    // ============== EVENT LISTENERS ==============
-    sendBtn.addEventListener("click", () => handleSend());
-
-    userInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            handleSend();
-        }
-    });
-
-    userInput.addEventListener("input", () => {
-        userInput.style.height = "20px";
-        userInput.style.height = userInput.scrollHeight + "px";
-    });
-
-    newChatBtn.addEventListener("click", () => {
-        // Clear chat but keep welcome message + first assistant msg
-        const msgs = chatInner.querySelectorAll(".message");
-        msgs.forEach((m) => m.remove());
-        conversation.length = 0;
-
-        // Re-add the initial message
-        const intro = document.createElement("div");
-        intro.className = "message assistant";
-        intro.innerHTML = `
-            <div class="message-avatar">AI</div>
-            <div class="message-content">
-                <div class="message-role">Campus AI</div>
-                <div class="message-text">
-                    <p>New chat started. Ask about your attendance, college rules or micro finance. I’ll keep it short and clear.</p>
-                </div>
-            </div>
-        `;
-        chatInner.appendChild(intro);
-        scrollToBottom();
-        setStatus("Ready");
-    });
-
-    chips.forEach((chip) => {
-        chip.addEventListener("click", () => {
-            const prompt = chip.getAttribute("data-prompt");
-            handleSend(prompt);
-        });
-    });
+  try {
+    const reply = await callAI(q);
+    chat.lastChild.innerText = reply;
+  } catch {
+    chat.lastChild.innerText = "Connection error. Check API key or internet.";
+  }
+}
 </script>
+
 </body>
 </html>
