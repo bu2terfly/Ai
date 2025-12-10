@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>College AI Assistant - Token Tracker</title>
+    <title>Dispur College AI Assistant - Live Test</title>
     <style>
-        /* Modern Minimal CSS (Same as before, with added monitor styling) */
+        /* CSS for a modern, minimal, trackable UI */
         :root {
             --primary: #007bff;
             --secondary: #6c757d;
@@ -30,7 +30,7 @@
         .chat-container {
             width: 100%;
             max-width: 700px;
-            height: 90vh; /* Increased height to accommodate the monitor */
+            height: 90vh;
             display: flex;
             flex-direction: column;
             background-color: var(--card-dark);
@@ -53,14 +53,11 @@
             display: flex;
             flex-direction: column;
             gap: 15px;
-            scrollbar-width: thin;
-            scrollbar-color: var(--primary) var(--card-dark);
         }
         .message {
             max-width: 80%;
             padding: 10px 15px;
             border-radius: 18px;
-            line-height: 1.4;
             word-wrap: break-word;
         }
         .user-message {
@@ -75,6 +72,18 @@
             color: var(--text-light);
             border-bottom-left-radius: 4px;
         }
+        /* Status and Monitoring Styles */
+        .status-message {
+            font-size: 0.8em;
+            text-align: center;
+            margin-top: -10px;
+        }
+        .status-message.cache-hit {
+            color: #28a745; /* Green for success */
+        }
+        .status-message.api-call {
+            color: #ffc107; /* Yellow for usage */
+        }
         .input-area {
             display: flex;
             padding: 15px 20px;
@@ -83,17 +92,12 @@
         #userInput {
             flex-grow: 1;
             padding: 12px;
-            border: 1px solid var(--border-color);
             border-radius: 25px;
             background-color: var(--background-dark);
             color: var(--text-light);
-            font-size: 1em;
             margin-right: 10px;
             outline: none;
-            transition: border-color 0.3s;
-        }
-        #userInput:focus {
-            border-color: var(--primary);
+            border: 1px solid var(--border-color);
         }
         #sendButton {
             background-color: var(--primary);
@@ -102,15 +106,11 @@
             border-radius: 50%;
             width: 45px;
             height: 45px;
-            font-size: 1.2em;
             cursor: pointer;
-            transition: background-color 0.3s, transform 0.1s;
+            transition: background-color 0.3s;
         }
         #sendButton:hover {
             background-color: #0056b3;
-        }
-        #sendButton:active {
-            transform: scale(0.95);
         }
         .loading::after {
             content: '...';
@@ -122,19 +122,20 @@
             33% { content: '..'; }
             66% { content: '...'; }
         }
-        /* New Styles for Usage Monitor */
+        /* Usage Monitor Panel */
         .monitor-panel {
             background-color: var(--background-dark);
             padding: 10px 20px;
             font-size: 0.85em;
             border-top: 2px solid var(--primary);
             display: flex;
-            justify-content: space-between;
+            justify-content: space-around;
         }
         .monitor-item {
             display: flex;
             flex-direction: column;
             align-items: center;
+            margin: 0 5px;
         }
         .monitor-label {
             color: var(--secondary);
@@ -143,6 +144,9 @@
         .monitor-value {
             font-weight: bold;
             color: var(--text-light);
+        }
+        .monitor-value.cost {
+            color: #dc3545; /* Red for cost */
         }
     </style>
 </head>
@@ -153,7 +157,7 @@
         </div>
         <div class="chat-display" id="chatDisplay">
             <div class="message ai-message">
-                Hello! I am your College Assistant. Ask me about **attendance** or **college info** (like the library or principal).
+                Hello! I am your College Assistant. Try asking about **attendance, library, or fees** to test caching and token usage!
             </div>
         </div>
         
@@ -167,141 +171,153 @@
                 <span class="monitor-value" id="monitorTokens">0</span>
             </div>
             <div class="monitor-item">
-                <span class="monitor-label">Last Input Tokens</span>
-                <span class="monitor-value" id="monitorInput">0</span>
+                <span class="monitor-label">Last Input/Output</span>
+                <span class="monitor-value" id="monitorIO">0 / 0</span>
             </div>
             <div class="monitor-item">
-                <span class="monitor-label">Last Output Tokens</span>
-                <span class="monitor-value" id="monitorOutput">0</span>
+                <span class="monitor-label">Cumulative Est. Cost</span>
+                <span class="monitor-value cost" id="monitorCost">$0.00000</span>
             </div>
         </div>
 
         <div class="input-area">
-            <input type="text" id="userInput" placeholder="Ask a question about college or your attendance..." autofocus>
+            <input type="text" id="userInput" placeholder="Ask a question..." autofocus>
             <button id="sendButton">➤</button>
         </div>
     </div>
 
     <script>
-        // *** PLACEHOLDER: 1. Replace with your actual Gemini API Key ***
+        // ************************************************
+        // ******* PLACE YOUR API KEY HERE ****************
+        // ************************************************
+        // WARNING: This key is visible to anyone on GitHub Pages. ONLY use this for testing!
         const GEMINI_API_KEY = "AIzaSyBqgrroGtY9YNz5TwrG0Tj6OHaAGVhAEGU"; 
-        const GEMINI_MODEL = "gemini-2.5-flash"
         
-        // --- DUMMY KNOWLEDGE BASE (RAG Context Simulation) ---
+        // --- DUMMY KNOWLEDGE BASE (Simulated RAG Content) ---
         const DUMMY_COLLEGE_INFO = {
-            "library": "Dispur college's library is located behind the cafeteria on the ground floor of the Principle's office building.",
-            "principal": "The principal's name is Dr. S. K. Sharma, and his joining date was August 15, 2018.",
-            "exams": "The sessional exam dates are October 15th-20th. Key topics are Chapter 3 and 5.",
-            "policy": "The college attendance policy states that students must maintain a minimum of 75% attendance to sit for the final exam."
+            "library": "Dispur college's main library is located behind the cafeteria, on the ground floor of the Principle's office building.",
+            "fees": "Semester fees are ₹12,500 and must be paid by the 10th of every month.",
+            "exams": "The sessional exam dates are October 15th-20th. Key topics are Chapter 3 and 5."
         };
 
-        // --- TOKEN MONITORING OBJECT (Replaces console logging) ---
+        // --- PRODUCTION LOGIC & MONITORING OBJECT ---
+        const FLASH_LITE_COST_PER_MILLION_INPUT = 0.10;
+        const FLASH_LITE_COST_PER_MILLION_OUTPUT = 0.40;
+        
         const tokenMonitor = {
             rpdCount: 0,
             totalTokens: 0,
-            updateUI: function(inputTokens, outputTokens) {
-                // RPD only increments on a simulated API call (Cache Miss)
-                if (inputTokens > 0) { 
+            cumulativeCost: 0,
+            updateUI: function(inputTokens, outputTokens, isCached) {
+                // Only track RPD and cumulative cost if tokens were used (i.e., not cached)
+                if (!isCached) {
                     this.rpdCount += 1;
-                    this.totalTokens += inputTokens + outputTokens;
+                    const totalTokens = inputTokens + outputTokens;
+                    this.totalTokens += totalTokens;
+                    
+                    const inputCost = inputTokens * (FLASH_LITE_COST_PER_MILLION_INPUT / 1000000);
+                    const outputCost = outputTokens * (FLASH_LITE_COST_PER_MILLION_OUTPUT / 1000000);
+                    this.cumulativeCost += inputCost + outputCost;
                 }
                 
-                // Update the UI elements
+                // Update UI elements regardless of cache status
                 document.getElementById('monitorRPD').textContent = this.rpdCount;
                 document.getElementById('monitorTokens').textContent = this.totalTokens;
-                document.getElementById('monitorInput').textContent = inputTokens;
-                document.getElementById('monitorOutput').textContent = outputTokens;
+                document.getElementById('monitorIO').textContent = `${inputTokens} / ${outputTokens}`;
+                document.getElementById('monitorCost').textContent = `$${this.cumulativeCost.toFixed(5)}`;
             }
         };
+
+        // --- SIMULATED VERCEL SERVERLESS FUNCTION (Backend Logic) ---
+        function getSimulatedAPIResponse(message) {
+            const lowerMsg = message.toLowerCase();
+            let aiResponse = "";
+            let tokenData = { input: 0, output: 0, cached: false };
+
+            // 1. Caching Check (Simulated RAG Check)
+            if (lowerMsg.includes('library') || lowerMsg.includes('located') || lowerMsg.includes('fees') || lowerMsg.includes('exam')) {
+                let context = "";
+                if (lowerMsg.includes('library')) context = DUMMY_COLLEGE_INFO.library;
+                else if (lowerMsg.includes('fees')) context = DUMMY_COLLEGE_INFO.fees;
+                else if (lowerMsg.includes('exam')) context = DUMMY_COLLEGE_INFO.exams;
+                
+                if (context) {
+                    aiResponse = context;
+                    tokenData.cached = true;
+                }
+            }
+            
+            // 2. Function Calling Check (Attendance/Dynamic)
+            if (lowerMsg.includes('attendance') || lowerMsg.includes('skip') || lowerMsg.includes('percentage')) {
+                // This simulates a Cache MISS and a successful API call.
+                const current = Math.floor(Math.random() * (90 - 70) + 70); 
+                const projection = Math.floor(current * 0.95); 
+                
+                // Strict, point-to-point response style
+                aiResponse = `Your Current overall is **${current}%**. If you skip 3 days then your overall will be **${projection}%** for all subject combined.`;
+                
+                // Token usage for a successful Function Call (Our calculated values)
+                tokenData.input = 143; 
+                tokenData.output = 65;
+                tokenData.cached = false;
+            }
+
+            // 3. Fallback/Grounding Failure Check
+            if (!tokenData.cached && tokenData.input === 0) {
+                 // Question was not static or dynamic (e.g., "what is the weather?"). 
+                 aiResponse = "I can only answer questions about Dispur College attendance or policies. Please rephrase your question.";
+                 tokenData.input = 80; // Cost of the prompt/system instructions
+                 tokenData.output = 30; // Cost of the short rejection
+                 tokenData.cached = false;
+            }
+
+            return { text: aiResponse, tokens: tokenData };
+        }
 
         const chatDisplay = document.getElementById('chatDisplay');
         const userInput = document.getElementById('userInput');
         const sendButton = document.getElementById('sendButton');
-
-        function appendMessage(sender, text) {
+        
+        function appendMessage(sender, text, status) {
             const messageDiv = document.createElement('div');
-            messageDiv.classList.add('message');
-            messageDiv.classList.add(sender === 'user' ? 'user-message' : 'ai-message');
+            messageDiv.classList.add('message', sender === 'user' ? 'user-message' : 'ai-message');
             messageDiv.innerHTML = text; 
             chatDisplay.appendChild(messageDiv);
+            
+            if (status) {
+                const statusDiv = document.createElement('div');
+                statusDiv.classList.add('status-message', status.cached ? 'cache-hit' : 'api-call');
+                statusDiv.textContent = status.cached ? "⚡️ CACHE HIT: Cost $0.00" : `💰 API CALL: Tokens used: ${status.input}/${status.output}`;
+                chatDisplay.appendChild(statusDiv);
+            }
+            
             chatDisplay.scrollTop = chatDisplay.scrollHeight;
             return messageDiv;
         }
-
-        function getSimulatedResponse(message) {
-            const lowerMsg = message.toLowerCase();
-            
-            // --- Caching/Static Questions (Simulated Cache Hit) ---
-            if (lowerMsg.includes('library') || lowerMsg.includes('located') || lowerMsg.includes('room')) {
-                // If this were a real app, the server checks cache, finds it, and sends the answer.
-                // TOKEN COST: 0 (Cache Hit)
-                return { 
-                    text: DUMMY_COLLEGE_INFO.library, 
-                    tokens: { input: 0, output: 0, cached: true } 
-                };
-            }
-            if (lowerMsg.includes('principal') || lowerMsg.includes('date')) {
-                 return { 
-                    text: DUMMY_COLLEGE_INFO.principal, 
-                    tokens: { input: 0, output: 0, cached: true } 
-                };
-            }
-            
-            // --- Attendance/Dynamic Questions (Simulated API Call/Cache Miss) ---
-            if (lowerMsg.includes('attendance') || lowerMsg.includes('skip') || lowerMsg.includes('percentage')) {
-                // Simulate a successful Function Call (Cost based on our previous calculation)
-                const current = Math.floor(Math.random() * (90 - 70) + 70); // Random initial percentage
-                const projection = Math.floor(current * 0.95); // Simulate a drop
-                
-                return {
-                    text: `Your Current overall is **${current}%**. If you skip 3 days then your overall will be **${projection}%** for all subject combined.`,
-                    tokens: { input: 143, output: 65, cached: false } // Our calculated token usage
-                };
-            }
-
-            // --- General Fallback Question (Simulated API Call/Cache Miss) ---
-            return {
-                text: "I can answer questions about attendance, the library, or the principal. Please try asking one of those!",
-                tokens: { input: 80, output: 40, cached: false } 
-            };
-        }
-
 
         async function sendMessage() {
             const message = userInput.value.trim();
             if (!message) return;
 
-            // 1. Display user message
             appendMessage('user', message);
             userInput.value = '';
-            
-            // 2. Get simulated response and token data
-            const simResult = getSimulatedResponse(message);
+            sendButton.disabled = true;
+
+            const simResult = getSimulatedAPIResponse(message);
             const tokenData = simResult.tokens;
 
-            // 3. Display loading message only if an API call is simulated
-            let loadingMessage;
             if (!tokenData.cached) {
-                loadingMessage = appendMessage('ai', '<span class="loading">Thinking...</span>');
-                sendButton.disabled = true;
-                await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network latency
-            } else {
-                 // For cached hits, display instantly and mark as cached
-                const cacheHitMessage = appendMessage('ai', '⚡️ **Cache Hit!** Finding info instantly...');
-                await new Promise(resolve => setTimeout(resolve, 500)); 
-                cacheHitMessage.remove(); // Remove the cache hit message after a moment
+                // Simulate network latency for API calls
+                const loadingMessage = appendMessage('ai', '<span class="loading">Processing Request...</span>');
+                await new Promise(resolve => setTimeout(resolve, 1500)); 
+                loadingMessage.remove(); 
             }
 
+            // Final AI response is displayed
+            appendMessage('ai', simResult.text, tokenData);
 
-            // 4. Update the loading message or append the instant answer
-            if (loadingMessage) {
-                loadingMessage.innerHTML = simResult.text;
-            } else {
-                appendMessage('ai', simResult.text);
-            }
-
-            // 5. Update the UI monitor with the usage data
-            tokenMonitor.updateUI(tokenData.input, tokenData.output);
+            // Update the UI monitor
+            tokenMonitor.updateUI(tokenData.input, tokenData.output, tokenData.cached);
             
             sendButton.disabled = false;
         }
@@ -314,7 +330,7 @@
         });
         
         // Initialize the monitor UI
-        tokenMonitor.updateUI(0, 0);
+        tokenMonitor.updateUI(0, 0, true);
 
     </script>
 </body>
