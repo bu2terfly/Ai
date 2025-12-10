@@ -7,103 +7,112 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg: #020617;
-      --bg-alt: #020617;
-      --card: #020617;
-      --border: #1f2937;
+      --bg: #f3f4f6;
+      --card: #ffffff;
+      --border: #e5e7eb;
       --accent: #22c55e;
-      --accent-soft: rgba(34,197,94,0.1);
-      --text: #e5e7eb;
-      --muted: #9ca3af;
-      --bot: #111827;
+      --accent-soft: #ecfdf5;
+      --text: #111827;
+      --muted: #6b7280;
+      --bot: #f3f4f6;
       --user: #22c55e;
       --radius-lg: 18px;
-      --radius-sm: 10px;
+      --radius-sm: 12px;
     }
+
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
                    "Segoe UI", sans-serif;
-      background: radial-gradient(circle at top, #111827 0, #020617 45%, #000 100%);
+      background: radial-gradient(circle at top, #e5f3ff 0, #f3f4f6 45%, #e5e7eb 100%);
       color: var(--text);
       min-height: 100vh;
       display: flex;
-      align-items: stretch;
+      align-items: center;
       justify-content: center;
-      padding: 10px;
+      padding: 16px;
     }
-    .app {
-      display: grid;
-      grid-template-columns: minmax(0, 280px) minmax(0, 640px);
-      gap: 12px;
+
+    .shell {
       width: 100%;
       max-width: 980px;
-      min-height: 90vh;
+      display: grid;
+      grid-template-columns: minmax(0, 280px) minmax(0, 640px);
+      gap: 16px;
     }
-    @media (max-width: 800px) {
-      .app { grid-template-columns: 1fr; min-height: 100vh; }
+
+    @media (max-width: 900px) {
+      .shell { grid-template-columns: minmax(0, 1fr); }
       .sidebar { display: none; }
     }
+
     .card {
-      background: rgba(15,23,42,0.85);
+      background: var(--card);
       border-radius: 20px;
-      border: 1px solid rgba(31,41,55,0.8);
-      backdrop-filter: blur(14px);
-      box-shadow: 0 18px 60px rgba(0,0,0,0.55);
+      border: 1px solid var(--border);
+      box-shadow: 0 20px 60px rgba(15, 23, 42, 0.06);
     }
 
     /* Sidebar */
     .sidebar {
-      padding: 14px 14px 16px;
+      padding: 16px 16px 18px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
     }
+
     .chip {
       display: inline-flex;
       align-items: center;
       gap: 6px;
       font-size: 11px;
-      padding: 3px 8px;
+      padding: 4px 10px;
       border-radius: 999px;
-      border: 1px solid rgba(148,163,184,0.6);
+      border: 1px solid #d1d5db;
       color: var(--muted);
+      background: #f9fafb;
     }
+
     .chip-dot {
-      width: 6px; height: 6px;
+      width: 7px;
+      height: 7px;
       border-radius: 999px;
       background: #22c55e;
-      box-shadow: 0 0 10px #22c55e;
+      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
     }
+
     .sidebar-section {
       border-radius: 16px;
-      border: 1px solid rgba(31,41,55,0.9);
-      background: radial-gradient(circle at top left,#0b1120 0,#020617 45%);
-      padding: 10px 12px;
+      border: 1px solid #e5e7eb;
+      background: #f9fafb;
+      padding: 12px 13px;
       font-size: 13px;
     }
+
     .sidebar-title {
-      font-size: 12px;
+      font-size: 11px;
       letter-spacing: .08em;
       text-transform: uppercase;
       color: var(--muted);
       margin-bottom: 6px;
     }
+
     .stat-grid {
       display: grid;
-      grid-template-columns: repeat(2,minmax(0,1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 6px;
-      margin-top: 6px;
+      margin-top: 8px;
     }
+
     .pill {
-      background: rgba(15,23,42,0.75);
+      background: white;
       border-radius: 999px;
       padding: 6px 9px;
-      border: 1px solid rgba(31,41,55,0.9);
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      font-size:11px;
-      color:var(--muted);
+      border: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: var(--muted);
     }
     .pill b { color: var(--text); font-weight: 600; }
 
@@ -113,12 +122,19 @@
       list-style: none;
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    .hint-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
     }
     .hint-list li::before {
-      content: "›";
-      margin-right: 6px;
+      content: "•";
+      margin-top: 1px;
       color: var(--accent);
+      font-size: 12px;
     }
 
     /* Main Chat */
@@ -127,164 +143,190 @@
       flex-direction: column;
       padding: 10px;
     }
+
     .main-header {
-      display:flex;
+      padding: 10px 12px 8px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
       justify-content: space-between;
-      align-items:center;
-      padding: 8px 10px 6px;
-      border-bottom: 1px solid rgba(31,41,55,0.8);
+      align-items: center;
     }
+
     .main-title {
-      display:flex;
-      flex-direction:column;
-      gap:2px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
     }
+
     .main-title h1 {
       font-size: 15px;
       font-weight: 600;
     }
+
     .main-title span {
       font-size: 11px;
       color: var(--muted);
     }
+
     .status-pill {
-      padding: 4px 8px;
+      padding: 5px 9px;
       border-radius: 999px;
       font-size: 11px;
-      border:1px solid rgba(55,65,81,0.9);
-      display:flex;
-      align-items:center;
-      gap:6px;
+      border: 1px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      gap: 6px;
       color: var(--muted);
+      background: #f9fafb;
     }
+
     .status-dot {
-      width:7px;height:7px;border-radius:999px;
-      background:#22c55e;
-      box-shadow:0 0 8px #22c55e;
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #22c55e;
+      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.25);
     }
 
     .chat-wrap {
-      flex:1;
-      overflow-y:auto;
+      flex: 1;
+      overflow-y: auto;
       padding: 12px;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: #f9fafb;
+      border-radius: 16px;
+      margin: 6px;
     }
+
     .msg-row {
-      display:flex;
-      margin-bottom:4px;
+      display: flex;
     }
-    .msg-row.user { justify-content:flex-end; }
+    .msg-row.user { justify-content: flex-end; }
+
     .msg-bubble {
       max-width: 80%;
-      padding: 9px 11px;
+      padding: 9px 12px;
       border-radius: var(--radius-sm);
       font-size: 13px;
-      line-height: 1.45;
+      line-height: 1.5;
       white-space: pre-wrap;
     }
+
     .msg-user {
-      background: rgba(34,197,94,0.1);
-      border:1px solid rgba(34,197,94,0.7);
-      color:#bbf7d0;
-      border-bottom-right-radius: 2px;
+      background: var(--accent-soft);
+      border: 1px solid rgba(34, 197, 94, 0.6);
+      color: #166534;
+      border-bottom-right-radius: 4px;
     }
+
     .msg-bot {
-      background: rgba(15,23,42,0.9);
-      border: 1px solid rgba(31,41,55,0.9);
-      border-bottom-left-radius: 2px;
-    }
-    .msg-meta {
-      font-size: 10px;
-      color: var(--muted);
-      margin-top: 1px;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      color: #111827;
+      border-bottom-left-radius: 4px;
     }
 
     .input-bar {
       padding: 8px 10px 10px;
-      border-top:1px solid rgba(31,41,55,0.8);
-      display:flex;
-      flex-direction:column;
-      gap:4px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      background: #f9fafb;
+      border-radius: 18px;
+      margin: 4px;
     }
+
     .input-row {
-      display:flex;
-      gap:8px;
-      align-items:flex-end;
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
     }
+
     textarea {
-      flex:1;
+      flex: 1;
       border-radius: 999px;
-      border:1px solid rgba(55,65,81,0.9);
+      border: 1px solid #d1d5db;
       padding: 9px 12px;
-      resize:none;
-      min-height:38px;
-      max-height:100px;
-      background: rgba(15,23,42,0.9);
+      resize: none;
+      min-height: 38px;
+      max-height: 120px;
+      background: #ffffff;
       color: var(--text);
       font-size: 13px;
     }
+
     textarea:focus {
-      outline:none;
+      outline: none;
       border-color: var(--accent);
-      box-shadow:0 0 0 1px rgba(34,197,94,0.4);
+      box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.4);
     }
+
     button {
-      border:none;
+      border: none;
       border-radius: 999px;
       padding: 9px 14px;
       font-size: 13px;
-      display:flex;
-      align-items:center;
-      gap:6px;
-      cursor:pointer;
-      background: linear-gradient(to right,#22c55e,#16a34a);
-      color:#022c22;
-      font-weight:500;
-      box-shadow:0 10px 30px rgba(16,185,129,0.45);
-      transition: transform .08s ease, box-shadow .08s ease, opacity .16s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      background: linear-gradient(to right, #22c55e, #16a34a);
+      color: #ffffff;
+      font-weight: 500;
+      box-shadow: 0 8px 26px rgba(16, 185, 129, 0.4);
+      transition: transform .08s ease, box-shadow .08s ease, opacity .12s;
     }
+
     button:disabled {
-      opacity: .55;
+      opacity: .6;
       cursor: default;
-      box-shadow:none;
-      transform:none;
+      box-shadow: none;
+      transform: none;
     }
+
     button:active {
       transform: translateY(1px) scale(0.99);
-      box-shadow:0 4px 16px rgba(16,185,129,0.35);
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
     }
+
     .fine-hint {
-      font-size:11px;
+      font-size: 11px;
       color: var(--muted);
-      display:flex;
-      justify-content:space-between;
-      gap:8px;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
     }
-    .fine-hint span:last-child { text-align:right; }
+
+    .fine-hint span:last-child {
+      text-align: right;
+    }
+
     .kbd {
       border-radius: 999px;
-      border:1px solid rgba(75,85,99,0.8);
-      padding:1px 7px;
-      font-size:10px;
+      border: 1px solid #d1d5db;
+      padding: 1px 7px;
+      font-size: 10px;
       color: var(--muted);
+      background: #ffffff;
     }
   </style>
 </head>
 <body>
-  <div class="app">
+  <div class="shell">
     <!-- SIDEBAR -->
     <aside class="card sidebar">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-        <span class="chip"><span class="chip-dot"></span> LAM Bot • Groq</span>
+        <span class="chip"><span class="chip-dot"></span> LAM Bot · Groq</span>
         <span style="font-size:11px;color:var(--muted);">Campus AI</span>
       </div>
 
       <section class="sidebar-section">
         <div class="sidebar-title">Student Snapshot (Demo)</div>
-        <div style="font-size:13px;line-height:1.5;">
-          <b>Rohan Sharma</b><br/>
+        <div style="font-size:13px;line-height:1.6;">
+          <strong>Rohan Sharma</strong><br/>
           ID: CS23-041 · B.Com (Hons) Sem 3<br/>
           Section: BCOM-H A · Roll: 17
         </div>
@@ -300,32 +342,32 @@
 
       <section class="sidebar-section">
         <div class="sidebar-title">College</div>
-        <div style="font-size:13px;line-height:1.5;margin-bottom:6px;">
+        <div style="font-size:13px;line-height:1.6;">
           North Hills Commerce College<br/>
           Guwahati, Assam<br/><br/>
-          Principal: <b>Dr. Priya Mukherjee</b><br/>
-          HoD (Commerce): <b>Prof. S. K. Dutta</b>
+          Principal: <strong>Dr. Priya Mukherjee</strong><br/>
+          HoD (Commerce): <strong>Prof. S. K. Dutta</strong>
         </div>
       </section>
 
       <section class="sidebar-section">
         <div class="sidebar-title">Try asking</div>
         <ul class="hint-list">
-          <li>“Show my attendance summary in short.”</li>
-          <li>“If I bunk 3 days, will I be eligible?”</li>
-          <li>“Write a leave application to HoD for 2 days.”</li>
-          <li>“Explain SHG and JLG in micro finance.”</li>
+          <li>Show my attendance summary in short.</li>
+          <li>If I bunk 3 days, will I still be eligible?</li>
+          <li>Write a leave application to HoD for 2 days.</li>
+          <li>Explain SHG and JLG in micro finance.</li>
         </ul>
       </section>
 
       <section class="sidebar-section">
         <div class="sidebar-title">Scope</div>
-        <div style="font-size:12px;color:var(--muted);line-height:1.5;">
+        <div style="font-size:12px;color:var(--muted);line-height:1.6;">
           LAM Bot focuses on:<br/>
           • Attendance & exam eligibility<br/>
           • College rules & leave letters<br/>
           • Commerce & micro finance study help<br/><br/>
-          It may refuse stock tips, CV/resume, jobs, or unrelated topics.
+          It may refuse stock tips, CV/resume help, jobs, or unrelated topics.
         </div>
       </section>
     </aside>
@@ -334,8 +376,8 @@
     <main class="card main">
       <div class="main-header">
         <div class="main-title">
-          <h1>LAM Bot • Campus Chat</h1>
-          <span>Powered by Groq • Model: LLaMA-3.1-8B</span>
+          <h1>LAM Bot · Campus Chat</h1>
+          <span>Powered by Groq · Model auto-selected</span>
         </div>
         <div class="status-pill">
           <span class="status-dot"></span>
@@ -366,12 +408,13 @@
    1. Groq API CONFIG  (Frontend demo only — key is visible)
    ============================================================ */
 const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
-const GROQ_MODEL   = "llama-3.1-8b";
+// For safest default model, you can try: "llama3-8b-8192" or leave it undefined.
+// We'll let you set model if you want; otherwise Groq may require it.
+const GROQ_DEFAULT_MODEL = "llama-3.1-8b-instant"; // change if Groq dashboard shows a different name
 const GROQ_API_KEY = "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"; // ← replace for testing
 
 /* ============================================================
    2. Demo attendance data for Rohan
-   (Later you can replace this with Firebase data.)
    ============================================================ */
 const demoAttendance = {
   name: "Rohan Sharma",
@@ -411,11 +454,10 @@ function addMessage(text, who = "bot") {
 }
 
 /* ============================================================
-   4. Prompt builder with logic: when & how to use attendance
+   4. Prompt builder with logic
    ============================================================ */
 function buildPrompt(userQuestion) {
   const s = userQuestion.toLowerCase();
-  // Light local check: is this likely attendance-related?
   const attendanceKeywords = [
     "attendance","attend","bunk","miss","percentage","percent",
     "eligible","eligibility","exam","detain","defaulter","shortage",
@@ -424,7 +466,7 @@ function buildPrompt(userQuestion) {
   const isAttendanceQuestion = attendanceKeywords.some(k => s.includes(k));
 
   const header = `You are "LAM Bot", a college assistant for North Hills Commerce College.
-Your job is to answer in simple, short, point-to-point English. Prefer 3–6 bullet points or 1–3 short paragraphs.`;
+Answer in simple, short, point-to-point English. Prefer 3–6 bullet points or 1–3 short paragraphs.`;
 
   const logicBlock = `
 Decision logic:
@@ -435,7 +477,7 @@ Decision logic:
 3. If it is about commerce or micro finance study topics (e.g., SHG, JLG, microfinance concepts):
    - Ignore the attendance data.
    - Give a short academic explanation.
-4. If it is clearly outside college/attendance/micro finance (for example stock market tips, jobs, CV/resume, personal relationships, politics, etc.):
+4. If it is clearly outside college/attendance/micro finance (for example stock market tips, jobs, CV/resume, personal relationships, politics, entertainment, etc.):
    - Do NOT use or mention the AttendanceData.
    - Reply exactly:
      "I can only help with our college attendance, exam eligibility, leave letters and commerce/micro finance study questions."
@@ -461,41 +503,41 @@ User question:
 
 Now answer as LAM Bot, following the decision logic very strictly.`;
 
-  // We always send attendanceBlock, but the model is instructed when to use it.
-  const fullPrompt = [
-    header,
-    logicBlock,
-    attendanceBlock,
-    userBlock
-  ].join("\n\n");
-
-  return { fullPrompt, isAttendanceQuestion };
+  const fullPrompt = [header, logicBlock, attendanceBlock, userBlock].join("\n\n");
+  return fullPrompt;
 }
 
 /* ============================================================
    5. Call Groq API (Chat Completions)
    ============================================================ */
 async function callGroq(promptText) {
+  const body = {
+    messages: [
+      { role: "system", content: "You are LAM Bot, a helpful and strict college assistant." },
+      { role: "user", content: promptText }
+    ]
+  };
+
+  if (GROQ_DEFAULT_MODEL) {
+    body.model = GROQ_DEFAULT_MODEL;
+  }
+
   const res = await fetch(GROQ_API_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "Authorization": "Bearer " + GROQ_API_KEY
     },
-    body: JSON.stringify({
-      model: GROQ_MODEL,
-      messages: [
-        { role: "system", content: "You are LAM Bot, a helpful and strict college assistant." },
-        { role: "user",   content: promptText }
-      ]
-    })
+    body: JSON.stringify(body)
   });
 
   const data = await res.json();
+
   if (!res.ok) {
     const msg = data?.error?.message || ("HTTP " + res.status);
     throw new Error(msg);
   }
+
   const reply = data.choices?.[0]?.message?.content?.trim();
   return reply || "I couldn't generate a response right now.";
 }
@@ -506,6 +548,7 @@ async function callGroq(promptText) {
 async function handleSend() {
   const text = inputEl.value.trim();
   if (!text) return;
+
   inputEl.value = "";
   const userBubble = addMessage(text, "user");
   const botBubble  = addMessage("Thinking...", "bot");
@@ -513,7 +556,7 @@ async function handleSend() {
   statusEl.textContent = "Thinking...";
 
   try {
-    const { fullPrompt } = buildPrompt(text);
+    const fullPrompt = buildPrompt(text);
     const reply = await callGroq(fullPrompt);
     botBubble.innerText = reply;
   } catch (err) {
@@ -527,7 +570,7 @@ async function handleSend() {
 }
 
 /* ============================================================
-   7. Event listeners & initial welcome message
+   7. Events & initial message
    ============================================================ */
 sendBtn.addEventListener("click", handleSend);
 
