@@ -3,335 +3,441 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dispur College AI Assistant - Live Test</title>
+    <title>Minimal Attendance AI Dashboard</title>
     <style>
-        /* CSS for a modern, minimal, trackable UI */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        
         :root {
-            --primary: #007bff;
-            --secondary: #6c757d;
-            --background-dark: #1e1e1e;
-            --text-light: #f5f5f5;
-            --card-dark: #2a2a2a;
-            --border-color: #444;
-            --ai-bubble: #343a40;
-            --user-bubble: var(--primary);
+            --bg-color: #1a1a2e;
+            --card-bg: #22223b;
+            --primary-color: #00bcd4; /* Cyan/Turquoise */
+            --text-light: #e0e0e0;
+            --text-muted: #9fa8da;
+            --border-color: #3f3f5f;
+            --success-color: #4CAF50;
+            --danger-color: #FF5252;
         }
+
         body {
-            font-family: 'Arial', sans-serif;
-            background-color: var(--background-dark);
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
             color: var(--text-light);
             margin: 0;
-            padding: 0;
+            padding: 40px 20px;
             display: flex;
             justify-content: center;
-            align-items: center;
             min-height: 100vh;
         }
-        .chat-container {
+
+        .dashboard-container {
             width: 100%;
-            max-width: 700px;
-            height: 90vh;
-            display: flex;
-            flex-direction: column;
-            background-color: var(--card-dark);
+            max-width: 1100px;
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 30px;
+        }
+
+        /* --- Global Card Styling --- */
+        .card {
+            background: var(--card-bg);
+            padding: 25px;
             border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-            overflow: hidden;
-        }
-        .header {
-            padding: 15px 20px;
-            background-color: var(--primary);
-            color: white;
-            font-size: 1.2em;
-            font-weight: bold;
-            text-align: center;
-        }
-        .chat-display {
-            flex-grow: 1;
-            padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        .message {
-            max-width: 80%;
-            padding: 10px 15px;
-            border-radius: 18px;
-            word-wrap: break-word;
-        }
-        .user-message {
-            align-self: flex-end;
-            background-color: var(--user-bubble);
-            color: white;
-            border-bottom-right-radius: 4px;
-        }
-        .ai-message {
-            align-self: flex-start;
-            background-color: var(--ai-bubble);
-            color: var(--text-light);
-            border-bottom-left-radius: 4px;
-        }
-        /* Status and Monitoring Styles */
-        .status-message {
-            font-size: 0.8em;
-            text-align: center;
-            margin-top: -10px;
-        }
-        .status-message.cache-hit {
-            color: #28a745; /* Green for success */
-        }
-        .status-message.api-call {
-            color: #ffc107; /* Yellow for usage */
-        }
-        .input-area {
-            display: flex;
-            padding: 15px 20px;
-            border-top: 1px solid var(--border-color);
-        }
-        #userInput {
-            flex-grow: 1;
-            padding: 12px;
-            border-radius: 25px;
-            background-color: var(--background-dark);
-            color: var(--text-light);
-            margin-right: 10px;
-            outline: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
             border: 1px solid var(--border-color);
         }
-        #sendButton {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 45px;
-            height: 45px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        #sendButton:hover {
-            background-color: #0056b3;
-        }
-        .loading::after {
-            content: '...';
-            display: inline-block;
-            animation: loading-dots 1.5s infinite;
-        }
-        @keyframes loading-dots {
-            0% { content: '.'; }
-            33% { content: '..'; }
-            66% { content: '...'; }
-        }
-        /* Usage Monitor Panel */
-        .monitor-panel {
-            background-color: var(--background-dark);
-            padding: 10px 20px;
-            font-size: 0.85em;
-            border-top: 2px solid var(--primary);
-            display: flex;
-            justify-content: space-around;
-        }
-        .monitor-item {
+
+        /* --- Sidebar (Attendance Data) --- */
+        .sidebar {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            margin: 0 5px;
+            gap: 30px;
         }
-        .monitor-label {
-            color: var(--secondary);
-            font-weight: normal;
+
+        .data-section h2 {
+            color: var(--primary-color);
+            margin-top: 0;
+            font-size: 1.5em;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
         }
-        .monitor-value {
+
+        .data-point {
+            margin-bottom: 10px;
+            font-size: 0.95em;
+        }
+
+        .data-point strong {
+            color: var(--text-light);
+            font-weight: 600;
+        }
+
+        .data-point span {
+            color: var(--text-muted);
+        }
+
+        .subject-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .subject-list li {
+            padding: 8px 0;
+            border-bottom: 1px dotted var(--border-color);
+            display: flex;
+            justify-content: space-between;
+        }
+        .subject-list li:last-child { border-bottom: none; }
+
+        .percentage-value {
             font-weight: bold;
+        }
+        .low-att { color: var(--danger-color); }
+        .safe-att { color: var(--success-color); }
+        .borderline-att { color: #FFC107; }
+
+        /* --- Main Content (Query & Response) --- */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            font-weight: 900;
+            margin: 0 0 10px 0;
+            color: white;
+        }
+
+        /* --- Input Section --- */
+        .input-section {
+            display: flex;
+            flex-direction: column;
+        }
+
+        #user-prompt {
+            background-color: #3f3f5f;
+            color: var(--text-light);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 1em;
+            margin-bottom: 15px;
+            width: calc(100% - 30px);
+            box-sizing: border-box;
+        }
+
+        .prompt-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: var(--card-bg);
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 700;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        button:hover { background-color: #00a4b9; }
+        button:active { transform: scale(0.98); }
+        button:disabled { background-color: #555; cursor: not-allowed; }
+
+        /* --- Output Section --- */
+        .output-section {
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #response-output {
+            flex-grow: 1;
+            white-space: pre-wrap;
+            background-color: #1a1a2e;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px dashed var(--border-color);
+            font-family: monospace;
+            line-height: 1.6;
+            overflow-x: auto;
             color: var(--text-light);
         }
-        .monitor-value.cost {
-            color: #dc3545; /* Red for cost */
+
+        /* --- Metrics Section --- */
+        .metrics-section {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-top: 15px;
         }
+
+        .metric-item {
+            background-color: #3f3f5f;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .metric-item-value {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 4px;
+        }
+
+        .metric-item-label {
+            font-size: 0.8em;
+            color: var(--text-muted);
+        }
+
+        .disclaimer {
+            margin-top: 15px;
+            font-size: 0.75em;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
     </style>
 </head>
 <body>
-    <div class="chat-container">
-        <div class="header">
-            Dispur College AI Assistant 🎓
-        </div>
-        <div class="chat-display" id="chatDisplay">
-            <div class="message ai-message">
-                Hello! I am your College Assistant. Try asking about **attendance, library, or fees** to test caching and token usage!
-            </div>
-        </div>
+
+    <div class="dashboard-container">
         
-        <div class="monitor-panel">
-            <div class="monitor-item">
-                <span class="monitor-label">Requests Per Day (RPD)</span>
-                <span class="monitor-value" id="monitorRPD">0</span>
+        <div class="sidebar">
+            <header>
+                <h1>Attendance AI ⚡</h1>
+                <p style="color: var(--text-muted);">Testing Gemini for college attendance predictions.</p>
+            </header>
+
+            <div class="data-section card">
+                <h2>Current Data Status</h2>
+                <div id="attendance-data-display">
+                    </div>
             </div>
-            <div class="monitor-item">
-                <span class="monitor-label">Total Tokens</span>
-                <span class="monitor-value" id="monitorTokens">0</span>
-            </div>
-            <div class="monitor-item">
-                <span class="monitor-label">Last Input/Output</span>
-                <span class="monitor-value" id="monitorIO">0 / 0</span>
-            </div>
-            <div class="monitor-item">
-                <span class="monitor-label">Cumulative Est. Cost</span>
-                <span class="monitor-value cost" id="monitorCost">$0.00000</span>
+
+            <div class="data-section card">
+                <h2>⚙️ API Metrics (Estimate)</h2>
+                <div class="metrics-section">
+                    <div class="metric-item">
+                        <div class="metric-item-value" id="metric-rpd">~0.5s</div>
+                        <div class="metric-item-label">RPD (sec)</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-item-value" id="metric-cost">$0.00</div>
+                        <div class="metric-item-label">Cost (USD)</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-item-value" id="metric-tokens-in">0</div>
+                        <div class="metric-item-label">Tokens In</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-item-value" id="metric-tokens-out">0</div>
+                        <div class="metric-item-label">Tokens Out</div>
+                    </div>
+                </div>
+                <p class="disclaimer">Note: RPD/Cost/Tokens are simulated/placeholder on the frontend. Use a backend for real data.</p>
             </div>
         </div>
 
-        <div class="input-area">
-            <input type="text" id="userInput" placeholder="Ask a question..." autofocus>
-            <button id="sendButton">➤</button>
+        <div class="main-content">
+            
+            <div class="input-section card">
+                <h2>💬 Ask Your AI</h2>
+                <input type="text" id="user-prompt" placeholder="E.g., Can I skip all classes for next 2 days?" value="If I skip 3 days then attend 2 days next what will be my percentage?" required>
+                
+                <div class="prompt-controls">
+                    <span style="color: var(--text-muted); font-size: 0.9em;">Model: **gemini-2.5-flash**</span>
+                    <button id="send-button" onclick="sendPrompt()">Get Analysis</button>
+                </div>
+            </div>
+
+            <div class="output-section card">
+                <h2>🧠 AI Response</h2>
+                <pre id="response-output">
+                    The AI analysis will appear here. The style is now *friendly, concise, and point-to-point*, focusing only on the calculation results and advice.
+                </pre>
+            </div>
+            
         </div>
     </div>
 
     <script>
-        // ************************************************
-        // ******* PLACE YOUR API KEY HERE ****************
-        // ************************************************
-        // WARNING: This key is visible to anyone on GitHub Pages. ONLY use this for testing!
-        const GEMINI_API_KEY = "AIzaSyBqgrroGtY9YNz5TwrG0Tj6OHaAGVhAEGU"; 
-        
-        // --- DUMMY KNOWLEDGE BASE (Simulated RAG Content) ---
-        const DUMMY_COLLEGE_INFO = {
-            "library": "Dispur college's main library is located behind the cafeteria, on the ground floor of the Principle's office building.",
-            "fees": "Semester fees are ₹12,500 and must be paid by the 10th of every month.",
-            "exams": "The sessional exam dates are October 15th-20th. Key topics are Chapter 3 and 5."
-        };
+        // ⚠️ WARNING: API Key is exposed in client-side code. Use a backend for production.
+        const GEMINI_API_KEY = "AIzaSyBqgrroGtY9YNz5TwrG0Tj6OHaAGVhAEGU"; // <<< REPLACE WITH YOUR KEY
+        const GEMINI_MODEL = "gemini-2.5-flash"; 
 
-        // --- PRODUCTION LOGIC & MONITORING OBJECT ---
-        const FLASH_LITE_COST_PER_MILLION_INPUT = 0.10;
-        const FLASH_LITE_COST_PER_MILLION_OUTPUT = 0.40;
-        
-        const tokenMonitor = {
-            rpdCount: 0,
-            totalTokens: 0,
-            cumulativeCost: 0,
-            updateUI: function(inputTokens, outputTokens, isCached) {
-                // Only track RPD and cumulative cost if tokens were used (i.e., not cached)
-                if (!isCached) {
-                    this.rpdCount += 1;
-                    const totalTokens = inputTokens + outputTokens;
-                    this.totalTokens += totalTokens;
-                    
-                    const inputCost = inputTokens * (FLASH_LITE_COST_PER_MILLION_INPUT / 1000000);
-                    const outputCost = outputTokens * (FLASH_LITE_COST_PER_MILLION_OUTPUT / 1000000);
-                    this.cumulativeCost += inputCost + outputCost;
-                }
-                
-                // Update UI elements regardless of cache status
-                document.getElementById('monitorRPD').textContent = this.rpdCount;
-                document.getElementById('monitorTokens').textContent = this.totalTokens;
-                document.getElementById('monitorIO').textContent = `${inputTokens} / ${outputTokens}`;
-                document.getElementById('monitorCost').textContent = `$${this.cumulativeCost.toFixed(5)}`;
+        // 1. SIMULATED FIREBASE DATA (Your input data structure)
+        const attendanceData = {
+            totalCollegeDays: 34,
+            totalClassesPerDay: "3-4", 
+            subjectAttendance: {
+                "Ca": { attended: 5, total: 8 },
+                "Fm": { attended: 23, total: 27 },
+                "Geo": { attended: 31, total: 34 },
+                "Bio": { attended: 9, total: 15 },
+                "Ast": { attended: 16, total: 24 },
+                "Ut": { attended: 8, total: 10 }
             }
         };
 
-        // --- SIMULATED VERCEL SERVERLESS FUNCTION (Backend Logic) ---
-        function getSimulatedAPIResponse(message) {
-            const lowerMsg = message.toLowerCase();
-            let aiResponse = "";
-            let tokenData = { input: 0, output: 0, cached: false };
+        // --- Utility Functions ---
 
-            // 1. Caching Check (Simulated RAG Check)
-            if (lowerMsg.includes('library') || lowerMsg.includes('located') || lowerMsg.includes('fees') || lowerMsg.includes('exam')) {
-                let context = "";
-                if (lowerMsg.includes('library')) context = DUMMY_COLLEGE_INFO.library;
-                else if (lowerMsg.includes('fees')) context = DUMMY_COLLEGE_INFO.fees;
-                else if (lowerMsg.includes('exam')) context = DUMMY_COLLEGE_INFO.exams;
-                
-                if (context) {
-                    aiResponse = context;
-                    tokenData.cached = true;
-                }
-            }
-            
-            // 2. Function Calling Check (Attendance/Dynamic)
-            if (lowerMsg.includes('attendance') || lowerMsg.includes('skip') || lowerMsg.includes('percentage')) {
-                // This simulates a Cache MISS and a successful API call.
-                const current = Math.floor(Math.random() * (90 - 70) + 70); 
-                const projection = Math.floor(current * 0.95); 
-                
-                // Strict, point-to-point response style
-                aiResponse = `Your Current overall is **${current}%**. If you skip 3 days then your overall will be **${projection}%** for all subject combined.`;
-                
-                // Token usage for a successful Function Call (Our calculated values)
-                tokenData.input = 143; 
-                tokenData.output = 65;
-                tokenData.cached = false;
-            }
-
-            // 3. Fallback/Grounding Failure Check
-            if (!tokenData.cached && tokenData.input === 0) {
-                 // Question was not static or dynamic (e.g., "what is the weather?"). 
-                 aiResponse = "I can only answer questions about Dispur College attendance or policies. Please rephrase your question.";
-                 tokenData.input = 80; // Cost of the prompt/system instructions
-                 tokenData.output = 30; // Cost of the short rejection
-                 tokenData.cached = false;
-            }
-
-            return { text: aiResponse, tokens: tokenData };
+        function getPercentageClass(percentage) {
+            if (percentage < 60) return 'low-att';
+            if (percentage < 75) return 'borderline-att';
+            return 'safe-att';
         }
 
-        const chatDisplay = document.getElementById('chatDisplay');
-        const userInput = document.getElementById('userInput');
-        const sendButton = document.getElementById('sendButton');
+        // Function to display the data on the page
+        function displayData() {
+            const displayDiv = document.getElementById('attendance-data-display');
+            let html = `<div class="data-point"><strong>Total College Days:</strong> <span>${attendanceData.totalCollegeDays}</span></div>`;
+            html += `<div class="data-point"><strong>Classes/Day:</strong> <span>${attendanceData.totalClassesPerDay}</span></div>`;
+            html += `<h3>Subject Attendance:</h3><ul class="subject-list">`;
+            
+            for (const [subject, data] of Object.entries(attendanceData.subjectAttendance)) {
+                const percentage = ((data.attended / data.total) * 100);
+                const percentageClass = getPercentageClass(percentage);
+
+                html += `<li>`;
+                html += `<span>${subject}: ${data.attended}/${data.total}</span>`;
+                html += `<span class="percentage-value ${percentageClass}">${percentage.toFixed(2)}%</span>`;
+                html += `</li>`;
+            }
+            html += `</ul>`;
+            displayDiv.innerHTML = html;
+        }
         
-        function appendMessage(sender, text, status) {
-            const messageDiv = document.createElement('div');
-            messageDiv.classList.add('message', sender === 'user' ? 'user-message' : 'ai-message');
-            messageDiv.innerHTML = text; 
-            chatDisplay.appendChild(messageDiv);
-            
-            if (status) {
-                const statusDiv = document.createElement('div');
-                statusDiv.classList.add('status-message', status.cached ? 'cache-hit' : 'api-call');
-                statusDiv.textContent = status.cached ? "⚡️ CACHE HIT: Cost $0.00" : `💰 API CALL: Tokens used: ${status.input}/${status.output}`;
-                chatDisplay.appendChild(statusDiv);
+        // Function to convert the data into a clear, parsable string for the AI
+        function createDataPrompt() {
+            let dataString = `
+                Current Attendance Performance:
+                - Total College Days passed: ${attendanceData.totalCollegeDays}
+                - Classes per day: ${attendanceData.totalClassesPerDay} (Use an average of 3.5 classes/day for general calculations, but subject-wise data is primary)
+                - Subject-wise Attendance (Attended/Total - Percentage):
+            `;
+
+            for (const [subject, data] of Object.entries(attendanceData.subjectAttendance)) {
+                const percentage = ((data.attended / data.total) * 100).toFixed(2);
+                dataString += `\n  - ${subject}: ${data.attended}/${data.total} (${percentage}%)`;
             }
-            
-            chatDisplay.scrollTop = chatDisplay.scrollHeight;
-            return messageDiv;
+            return dataString;
         }
 
-        async function sendMessage() {
-            const message = userInput.value.trim();
-            if (!message) return;
+        // Function to update metric display
+        function updateMetrics(rpd, cost, tokensIn, tokensOut) {
+            document.getElementById('metric-rpd').innerText = rpd !== null ? `${rpd.toFixed(2)}s` : '--';
+            document.getElementById('metric-cost').innerText = cost !== null ? `$${cost.toFixed(4)}` : '$0.00';
+            document.getElementById('metric-tokens-in').innerText = tokensIn !== null ? tokensIn : 0;
+            document.getElementById('metric-tokens-out').innerText = tokensOut !== null ? tokensOut : 0;
+        }
 
-            appendMessage('user', message);
-            userInput.value = '';
+        // 2. MAIN FUNCTION TO CALL THE GEMINI API
+        async function sendPrompt() {
+            const userPrompt = document.getElementById('user-prompt').value;
+            const outputDiv = document.getElementById('response-output');
+            const sendButton = document.getElementById('send-button');
+            const startTime = Date.now();
+            
+            if (!userPrompt || GEMINI_API_KEY === "YOUR_API_KEY_HERE") {
+                outputDiv.innerText = "🚨 Error: Please enter a question and/or replace 'YOUR_API_KEY_HERE' in the script.";
+                return;
+            }
+
+            outputDiv.innerText = "🧠 Analyzing your request... (Status: Waiting for AI)";
             sendButton.disabled = true;
-
-            const simResult = getSimulatedAPIResponse(message);
-            const tokenData = simResult.tokens;
-
-            if (!tokenData.cached) {
-                // Simulate network latency for API calls
-                const loadingMessage = appendMessage('ai', '<span class="loading">Processing Request...</span>');
-                await new Promise(resolve => setTimeout(resolve, 1500)); 
-                loadingMessage.remove(); 
-            }
-
-            // Final AI response is displayed
-            appendMessage('ai', simResult.text, tokenData);
-
-            // Update the UI monitor
-            tokenMonitor.updateUI(tokenData.input, tokenData.output, tokenData.cached);
+            sendButton.innerText = "Analyzing...";
             
-            sendButton.disabled = false;
+            const dataPrompt = createDataPrompt();
+
+            // Constructing the complete prompt for the AI - **Friendly, concise, and point-to-point style enforced here**
+            const fullPrompt = `
+                You are a concise, friendly, and factual Attendance Best Friend AI. Your response must be:
+                1. Point-to-point (using bullet points or clear headings).
+                2. Short, human-like, and easy to understand.
+                3. Strictly focused on the calculation results and clear advice based on the numbers.
+                4. **Crucially**: Answer the student's question by performing the calculation for EACH subject using the current data.
+
+                ---
+                STUDENT'S CURRENT ATTENDANCE DATA:
+                ${dataPrompt}
+                ---
+
+                STUDENT'S QUESTION:
+                "${userPrompt}"
+                ---
+
+                Analyze the scenario: The student skips for 3 days and then attends for 2 days. Assume the average of 3.5 classes per day are skipped/attended across ALL subjects for the scenario calculation unless specific subject totals are relevant. Provide the new projected attendance for each subject.
+            `;
+            
+            let tokensIn = fullPrompt.length; // Simple placeholder approximation
+
+            try {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{ text: fullPrompt }]
+                        }],
+                        // Request a shorter, point-to-point response
+                        config: {
+                            temperature: 0.1, 
+                            maxOutputTokens: 500
+                        }
+                    })
+                });
+
+                const result = await response.json();
+                const endTime = Date.now();
+                const rpd = (endTime - startTime) / 1000;
+                let tokensOut = 0;
+                let aiText = "Could not get a valid response from the AI.";
+
+                if (result.error) {
+                    aiText = `🚨 API ERROR: ${result.error.message}`;
+                    console.error("API Error:", result.error);
+                } else if (result.candidates && result.candidates.length > 0) {
+                    aiText = result.candidates[0].content.parts[0].text;
+                    // Attempt to get actual token count (if available in your specific setup)
+                    if (result.usageMetadata) {
+                         tokensIn = result.usageMetadata.promptTokenCount || tokensIn;
+                         tokensOut = result.usageMetadata.candidatesTokenCount || 0;
+                    }
+                }
+
+                outputDiv.innerText = aiText;
+                
+                // Update Metrics (Cost is a placeholder calculation, needs backend for accuracy)
+                // Assuming rough estimate: 0.00035 USD / 1000 tokens for flash
+                const estimatedCost = (tokensIn + tokensOut) * (0.00035 / 1000); 
+                updateMetrics(rpd, estimatedCost, tokensIn, tokensOut);
+
+            } catch (error) {
+                outputDiv.innerText = `⚠️ An unexpected network error occurred: ${error.message}`;
+                console.error("Fetch Error:", error);
+                const rpd = (Date.now() - startTime) / 1000;
+                updateMetrics(rpd, 0, tokensIn, 0); // Update RPD on error
+            } finally {
+                sendButton.disabled = false;
+                sendButton.innerText = "Get Analysis";
+            }
         }
 
-        sendButton.addEventListener('click', sendMessage);
-        userInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
-        });
-        
-        // Initialize the monitor UI
-        tokenMonitor.updateUI(0, 0, true);
-
+        // Initialize the page display
+        window.onload = displayData;
     </script>
+
 </body>
 </html>
