@@ -1,591 +1,137 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>LAM Bot • Campus AI (Groq)</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --bg: #f3f4f6;
-      --card: #ffffff;
-      --border: #e5e7eb;
-      --accent: #22c55e;
-      --accent-soft: #ecfdf5;
-      --text: #111827;
-      --muted: #6b7280;
-      --bot: #f3f4f6;
-      --user: #22c55e;
-      --radius-lg: 18px;
-      --radius-sm: 12px;
-    }
-
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Login or Signup Screen</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#d97757",
+              "background-light": "#f5f5f5",
+              "background-dark": "#1e1e1e",
+              "surface-dark": "#2a2a2a",
+              "text-light": "#e5e5e5",
+              "text-muted": "#9ca3af",
+            },
+            fontFamily: {
+              display: ["Merriweather", "serif"],
+              sans: ["Inter", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "0.5rem",
+              'xl': '0.75rem',
+              '2xl': '1rem',
+              '3xl': '1.5rem',
+            },
+          },
+        },
+      };
+    </script>
+<style>.toast-shadow {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+<style>
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
-                   "Segoe UI", sans-serif;
-      background: radial-gradient(circle at top, #e5f3ff 0, #f3f4f6 45%, #e5e7eb 100%);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-    }
-
-    .shell {
-      width: 100%;
-      max-width: 980px;
-      display: grid;
-      grid-template-columns: minmax(0, 280px) minmax(0, 640px);
-      gap: 16px;
-    }
-
-    @media (max-width: 900px) {
-      .shell { grid-template-columns: minmax(0, 1fr); }
-      .sidebar { display: none; }
-    }
-
-    .card {
-      background: var(--card);
-      border-radius: 20px;
-      border: 1px solid var(--border);
-      box-shadow: 0 20px 60px rgba(15, 23, 42, 0.06);
-    }
-
-    /* Sidebar */
-    .sidebar {
-      padding: 16px 16px 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 11px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      border: 1px solid #d1d5db;
-      color: var(--muted);
-      background: #f9fafb;
-    }
-
-    .chip-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 999px;
-      background: #22c55e;
-      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
-    }
-
-    .sidebar-section {
-      border-radius: 16px;
-      border: 1px solid #e5e7eb;
-      background: #f9fafb;
-      padding: 12px 13px;
-      font-size: 13px;
-    }
-
-    .sidebar-title {
-      font-size: 11px;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 6px;
-    }
-
-    .stat-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 6px;
-      margin-top: 8px;
-    }
-
-    .pill {
-      background: white;
-      border-radius: 999px;
-      padding: 6px 9px;
-      border: 1px solid #e5e7eb;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 11px;
-      color: var(--muted);
-    }
-    .pill b { color: var(--text); font-weight: 600; }
-
-    .hint-list {
-      font-size: 12px;
-      color: var(--muted);
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      margin-top: 4px;
-    }
-    .hint-list li {
-      display: flex;
-      align-items: flex-start;
-      gap: 6px;
-    }
-    .hint-list li::before {
-      content: "•";
-      margin-top: 1px;
-      color: var(--accent);
-      font-size: 12px;
-    }
-
-    /* Main Chat */
-    .main {
-      display: flex;
-      flex-direction: column;
-      padding: 10px;
-    }
-
-    .main-header {
-      padding: 10px 12px 8px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .main-title {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .main-title h1 {
-      font-size: 15px;
-      font-weight: 600;
-    }
-
-    .main-title span {
-      font-size: 11px;
-      color: var(--muted);
-    }
-
-    .status-pill {
-      padding: 5px 9px;
-      border-radius: 999px;
-      font-size: 11px;
-      border: 1px solid #e5e7eb;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      color: var(--muted);
-      background: #f9fafb;
-    }
-
-    .status-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 999px;
-      background: #22c55e;
-      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.25);
-    }
-
-    .chat-wrap {
-      flex: 1;
-      overflow-y: auto;
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      background: #f9fafb;
-      border-radius: 16px;
-      margin: 6px;
-    }
-
-    .msg-row {
-      display: flex;
-    }
-    .msg-row.user { justify-content: flex-end; }
-
-    .msg-bubble {
-      max-width: 80%;
-      padding: 9px 12px;
-      border-radius: var(--radius-sm);
-      font-size: 13px;
-      line-height: 1.5;
-      white-space: pre-wrap;
-    }
-
-    .msg-user {
-      background: var(--accent-soft);
-      border: 1px solid rgba(34, 197, 94, 0.6);
-      color: #166534;
-      border-bottom-right-radius: 4px;
-    }
-
-    .msg-bot {
-      background: #ffffff;
-      border: 1px solid #e5e7eb;
-      color: #111827;
-      border-bottom-left-radius: 4px;
-    }
-
-    .input-bar {
-      padding: 8px 10px 10px;
-      border-top: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      background: #f9fafb;
-      border-radius: 18px;
-      margin: 4px;
-    }
-
-    .input-row {
-      display: flex;
-      gap: 8px;
-      align-items: flex-end;
-    }
-
-    textarea {
-      flex: 1;
-      border-radius: 999px;
-      border: 1px solid #d1d5db;
-      padding: 9px 12px;
-      resize: none;
-      min-height: 38px;
-      max-height: 120px;
-      background: #ffffff;
-      color: var(--text);
-      font-size: 13px;
-    }
-
-    textarea:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.4);
-    }
-
-    button {
-      border: none;
-      border-radius: 999px;
-      padding: 9px 14px;
-      font-size: 13px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-      background: linear-gradient(to right, #22c55e, #16a34a);
-      color: #ffffff;
-      font-weight: 500;
-      box-shadow: 0 8px 26px rgba(16, 185, 129, 0.4);
-      transition: transform .08s ease, box-shadow .08s ease, opacity .12s;
-    }
-
-    button:disabled {
-      opacity: .6;
-      cursor: default;
-      box-shadow: none;
-      transform: none;
-    }
-
-    button:active {
-      transform: translateY(1px) scale(0.99);
-      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
-    }
-
-    .fine-hint {
-      font-size: 11px;
-      color: var(--muted);
-      display: flex;
-      justify-content: space-between;
-      gap: 8px;
-    }
-
-    .fine-hint span:last-child {
-      text-align: right;
-    }
-
-    .kbd {
-      border-radius: 999px;
-      border: 1px solid #d1d5db;
-      padding: 1px 7px;
-      font-size: 10px;
-      color: var(--muted);
-      background: #ffffff;
+      min-height: max(884px, 100dvh);
     }
   </style>
-</head>
-<body>
-  <div class="shell">
-    <!-- SIDEBAR -->
-    <aside class="card sidebar">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-        <span class="chip"><span class="chip-dot"></span> LAM Bot · Groq</span>
-        <span style="font-size:11px;color:var(--muted);">Campus AI</span>
-      </div>
-
-      <section class="sidebar-section">
-        <div class="sidebar-title">Student Snapshot (Demo)</div>
-        <div style="font-size:13px;line-height:1.6;">
-          <strong>Rohan Sharma</strong><br/>
-          ID: CS23-041 · B.Com (Hons) Sem 3<br/>
-          Section: BCOM-H A · Roll: 17
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen flex flex-col items-center justify-between py-12 px-6 font-sans text-gray-900 dark:text-text-light antialiased transition-colors duration-200">
+<div class="w-full max-w-sm flex-1 flex flex-col items-center pt-8">
+<div class="flex items-center gap-3 mb-16">
+<div class="relative w-8 h-8 flex items-center justify-center">
+<svg class="text-primary" fill="none" height="32" viewBox="0 0 24 24" width="32" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 2L13.5 8.5L20 7L15 12L20 17L13.5 15.5L12 22L10.5 15.5L4 17L9 12L4 7L10.5 8.5L12 2Z" fill="currentColor" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5"></path>
+</svg>
+</div>
+<span class="font-display text-3xl font-semibold tracking-tight text-black dark:text-white">attendmark</span>
+</div>
+<h1 class="font-display text-4xl text-center leading-tight mb-8 text-black dark:text-white">
+            welcome<br/>mates
+        </h1>
+<div class="w-full bg-gray-200 dark:bg-[#1a1a1a] border border-gray-300 dark:border-[#2a2a2a] rounded-xl p-5 mb-12 text-center shadow-sm toast-shadow">
+<p class="text-[15px] leading-snug text-gray-800 dark:text-gray-200">
+                Your session has expired.<br/>
+                Please log in again.
+            </p>
+</div>
+<div class="w-full space-y-3 mb-12" id="loginForm">
+<button class="w-full bg-white dark:bg-[#2a2a2a] hover:bg-gray-50 dark:hover:bg-[#333333] border-0 rounded-xl py-4 text-gray-900 dark:text-white font-medium text-[17px] flex items-center justify-center gap-3 transition-all shadow-sm">
+<svg class="w-5 h-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
+<path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
+<path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"></path>
+<path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path>
+</svg>
+            Continue with Google
+        </button>
+<div class="flex items-center w-full gap-4 py-1">
+<div class="h-px bg-gray-300 dark:bg-gray-700 flex-1"></div>
+<span class="text-sm text-gray-400 dark:text-gray-500 font-medium">or</span>
+<div class="h-px bg-gray-300 dark:bg-gray-700 flex-1"></div>
+</div>
+<div class="relative group">
+<input class="w-full bg-gray-200 dark:bg-[#2a2a2a] border-0 rounded-xl py-4 pl-5 pr-14 text-gray-900 dark:text-white placeholder-gray-500 focus:ring-1 focus:ring-gray-400 dark:focus:ring-gray-600 text-[17px] transition-all" id="emailInput" oninput="toggleArrow()" placeholder="email@example.com" type="email"/>
+<button class="hidden absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white dark:bg-white rounded-lg flex items-center justify-center hover:bg-gray-100 transition-colors shadow-sm cursor-pointer z-10" id="emailArrowBtn" onclick="showPassword()">
+<svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+</div>
+<div class="hidden relative group" id="passwordContainer">
+<input class="w-full bg-gray-200 dark:bg-[#2a2a2a] border-0 rounded-xl py-4 pl-5 pr-5 text-gray-900 dark:text-white placeholder-gray-500 focus:ring-1 focus:ring-gray-400 dark:focus:ring-gray-600 text-[17px]" placeholder="Password" type="password"/>
+</div>
+<button class="hidden w-full bg-primary text-white rounded-xl py-4 font-medium text-[17px] hover:bg-opacity-90 transition-colors shadow-sm" id="continueBtn">
+                Continue
+            </button>
+</div>
+<div class="text-center text-sm text-gray-500 dark:text-gray-400 leading-relaxed px-2">
+            By continuing, you agree to Anthropic's<br/>
+<a class="underline decoration-1 underline-offset-2 hover:text-gray-800 dark:hover:text-gray-200" href="#">Consumer Terms</a> and <a class="underline decoration-1 underline-offset-2 hover:text-gray-800 dark:hover:text-gray-200" href="#">Usage Policy</a>, and<br/>
+            acknowledge their <a class="underline decoration-1 underline-offset-2 hover:text-gray-800 dark:hover:text-gray-200" href="#">Privacy Policy</a>.
         </div>
-        <div class="stat-grid">
-          <div class="pill"><span>Overall</span><b>86%</b></div>
-          <div class="pill"><span>Micro Fin.</span><b>92%</b></div>
-          <div class="pill"><span>Bus. Law</span><b>80%</b></div>
-          <div class="pill"><span>QT</span><b>82%</b></div>
-          <div class="pill"><span>EVS</span><b>78%</b></div>
-          <div class="pill"><span>Min Req.</span><b>75%</b></div>
-        </div>
-      </section>
-
-      <section class="sidebar-section">
-        <div class="sidebar-title">College</div>
-        <div style="font-size:13px;line-height:1.6;">
-          North Hills Commerce College<br/>
-          Guwahati, Assam<br/><br/>
-          Principal: <strong>Dr. Priya Mukherjee</strong><br/>
-          HoD (Commerce): <strong>Prof. S. K. Dutta</strong>
-        </div>
-      </section>
-
-      <section class="sidebar-section">
-        <div class="sidebar-title">Try asking</div>
-        <ul class="hint-list">
-          <li>Show my attendance summary in short.</li>
-          <li>If I bunk 3 days, will I still be eligible?</li>
-          <li>Write a leave application to HoD for 2 days.</li>
-          <li>Explain SHG and JLG in micro finance.</li>
-        </ul>
-      </section>
-
-      <section class="sidebar-section">
-        <div class="sidebar-title">Scope</div>
-        <div style="font-size:12px;color:var(--muted);line-height:1.6;">
-          LAM Bot focuses on:<br/>
-          • Attendance & exam eligibility<br/>
-          • College rules & leave letters<br/>
-          • Commerce & micro finance study help<br/><br/>
-          It may refuse stock tips, CV/resume help, jobs, or unrelated topics.
-        </div>
-      </section>
-    </aside>
-
-    <!-- MAIN CHAT -->
-    <main class="card main">
-      <div class="main-header">
-        <div class="main-title">
-          <h1>LAM Bot · Campus Chat</h1>
-          <span>Powered by Groq · Model auto-selected</span>
-        </div>
-        <div class="status-pill">
-          <span class="status-dot"></span>
-          <span id="status-label">Ready</span>
-        </div>
-      </div>
-
-      <div class="chat-wrap" id="chat"></div>
-
-      <div class="input-bar">
-        <div class="input-row">
-          <textarea id="userInput" rows="1" placeholder="Ask about attendance, exam eligibility, leave letters or micro finance..."></textarea>
-          <button id="sendBtn">
-            <span>Send</span>
-            <span>➤</span>
-          </button>
-        </div>
-        <div class="fine-hint">
-          <span><span class="kbd">↵ Enter</span> to send · <span class="kbd">Shift+Enter</span> for new line</span>
-          <span>AI may politely refuse off-topic questions.</span>
-        </div>
-      </div>
-    </main>
-  </div>
-
+</div>
+<div class="mt-auto pb-4 pt-12">
+<span class="text-xs font-bold tracking-[0.2em] text-gray-400 dark:text-gray-600 uppercase">Anthropic</span>
+</div>
 <script>
-/* ============================================================
-   1. Groq API CONFIG  (Frontend demo only — key is visible)
-   ============================================================ */
-const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
-// For safest default model, you can try: "llama3-8b-8192" or leave it undefined.
-// We'll let you set model if you want; otherwise Groq may require it.
-const GROQ_DEFAULT_MODEL = "llama-3.1-8b-instant"; // change if Groq dashboard shows a different name
-const GROQ_API_KEY = "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"; // ← replace for testing
+        document.documentElement.classList.add('dark');
+        function toggleArrow() {
+            const emailInput = document.getElementById('emailInput');
+            const arrowBtn = document.getElementById('emailArrowBtn');
+            const passwordContainer = document.getElementById('passwordContainer');
+            const continueBtn = document.getElementById('continueBtn');
+            // Only show arrow if there is text AND password field hasn't been revealed yet
+            if (emailInput.value.length > 0 && passwordContainer.classList.contains('hidden')) {
+                arrowBtn.classList.remove('hidden');
+            } else {
+                arrowBtn.classList.add('hidden');
+            }
+        }
+        function showPassword() {
+            const arrowBtn = document.getElementById('emailArrowBtn');
+            const passwordContainer = document.getElementById('passwordContainer');
+            const continueBtn = document.getElementById('continueBtn');
+            const emailInput = document.getElementById('emailInput');
+            // Hide the arrow button on the email field
+            arrowBtn.classList.add('hidden');
+            // Show password field and continue button
+            passwordContainer.classList.remove('hidden');
+            continueBtn.classList.remove('hidden');
+            // Focus on password input
+            passwordContainer.querySelector('input').focus();
+        }
+    </script>
 
-/* ============================================================
-   2. Demo attendance data for Rohan
-   ============================================================ */
-const demoAttendance = {
-  name: "Rohan Sharma",
-  id: "CS23-041",
-  program: "B.Com (Hons)",
-  semester: 3,
-  section: "BCOM-H A",
-  roll: 17,
-  overall: 86,
-  micro_finance: 92,
-  business_law: 80,
-  quantitative_techniques: 82,
-  evs: 78,
-  min_required: 75
-};
-
-/* ============================================================
-   3. UI helpers
-   ============================================================ */
-const chatEl   = document.getElementById("chat");
-const inputEl  = document.getElementById("userInput");
-const sendBtn  = document.getElementById("sendBtn");
-const statusEl = document.getElementById("status-label");
-
-function addMessage(text, who = "bot") {
-  const row = document.createElement("div");
-  row.className = "msg-row " + (who === "user" ? "user" : "bot");
-
-  const bubble = document.createElement("div");
-  bubble.className = "msg-bubble " + (who === "user" ? "msg-user" : "msg-bot");
-  bubble.innerText = text;
-
-  row.appendChild(bubble);
-  chatEl.appendChild(row);
-  chatEl.scrollTop = chatEl.scrollHeight;
-  return bubble;
-}
-
-/* ============================================================
-   4. Prompt builder with logic
-   ============================================================ */
-function buildPrompt(userQuestion) {
-  const s = userQuestion.toLowerCase();
-  const attendanceKeywords = [
-    "attendance","attend","bunk","miss","percentage","percent",
-    "eligible","eligibility","exam","detain","defaulter","shortage",
-    "class","present","absent","leave","hod","principal"
-  ];
-  const isAttendanceQuestion = attendanceKeywords.some(k => s.includes(k));
-
-  const header = `You are "LAM Bot", a college assistant for North Hills Commerce College.
-Answer in simple, short, point-to-point English. Prefer 3–6 bullet points or 1–3 short paragraphs.`;
-
-  const logicBlock = `
-Decision logic:
-1. First, read the user's question and decide if it is about attendance, exam eligibility, leave related to attendance, or college rules.
-2. If it IS about attendance, exams, classes missed, bunking, or leave for college:
-   - Use the AttendanceData block to reason.
-   - Use the minimum required percentage to decide eligibility.
-3. If it is about commerce or micro finance study topics (e.g., SHG, JLG, microfinance concepts):
-   - Ignore the attendance data.
-   - Give a short academic explanation.
-4. If it is clearly outside college/attendance/micro finance (for example stock market tips, jobs, CV/resume, personal relationships, politics, entertainment, etc.):
-   - Do NOT use or mention the AttendanceData.
-   - Reply exactly:
-     "I can only help with our college attendance, exam eligibility, leave letters and commerce/micro finance study questions."
-   - Do not answer the off-topic content.`;
-
-  const attendanceBlock = `
-AttendanceData (for Rohan, demo):
-- Name: ${demoAttendance.name}
-- ID: ${demoAttendance.id}
-- Program: ${demoAttendance.program}, Semester ${demoAttendance.semester}, Section ${demoAttendance.section}, Roll ${demoAttendance.roll}
-- Overall attendance: ${demoAttendance.overall}%
-- Micro Finance: ${demoAttendance.micro_finance}%
-- Business Law: ${demoAttendance.business_law}%
-- Quantitative Techniques: ${demoAttendance.quantitative_techniques}%
-- EVS: ${demoAttendance.evs}%
-- Minimum required per subject to sit for exam: ${demoAttendance.min_required}%
-
-Use this data ONLY when the question is about attendance, classes, bunking, or exam eligibility. Never invent numbers that are not present here.`;
-
-  const userBlock = `
-User question:
-"${userQuestion}"
-
-Now answer as LAM Bot, following the decision logic very strictly.`;
-
-  const fullPrompt = [header, logicBlock, attendanceBlock, userBlock].join("\n\n");
-  return fullPrompt;
-}
-
-/* ============================================================
-   5. Call Groq API (Chat Completions)
-   ============================================================ */
-async function callGroq(promptText) {
-  const body = {
-    messages: [
-      { role: "system", content: "You are LAM Bot, a helpful and strict college assistant." },
-      { role: "user", content: promptText }
-    ]
-  };
-
-  if (GROQ_DEFAULT_MODEL) {
-    body.model = GROQ_DEFAULT_MODEL;
-  }
-
-  const res = await fetch(GROQ_API_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer " + GROQ_API_KEY
-    },
-    body: JSON.stringify(body)
-  });
-
-  const data = await res.json();
-
-  if (!res.ok) {
-    const msg = data?.error?.message || ("HTTP " + res.status);
-    throw new Error(msg);
-  }
-
-  const reply = data.choices?.[0]?.message?.content?.trim();
-  return reply || "I couldn't generate a response right now.";
-}
-
-/* ============================================================
-   6. Send handler
-   ============================================================ */
-async function handleSend() {
-  const text = inputEl.value.trim();
-  if (!text) return;
-
-  inputEl.value = "";
-  const userBubble = addMessage(text, "user");
-  const botBubble  = addMessage("Thinking...", "bot");
-  sendBtn.disabled = true;
-  statusEl.textContent = "Thinking...";
-
-  try {
-    const fullPrompt = buildPrompt(text);
-    const reply = await callGroq(fullPrompt);
-    botBubble.innerText = reply;
-  } catch (err) {
-    console.error(err);
-    botBubble.innerText = "Error talking to AI: " + err.message;
-  } finally {
-    sendBtn.disabled = false;
-    statusEl.textContent = "Ready";
-    chatEl.scrollTop = chatEl.scrollHeight;
-  }
-}
-
-/* ============================================================
-   7. Events & initial message
-   ============================================================ */
-sendBtn.addEventListener("click", handleSend);
-
-inputEl.addEventListener("keydown", (e) => {
-  if (e.key === "Enter" && !e.shiftKey) {
-    e.preventDefault();
-    handleSend();
-  }
-});
-
-// Initial greeting
-addMessage(
-  "Hi, I’m LAM Bot.\n\nI can help you with:\n• Your attendance & exam eligibility\n• College rules and leave applications\n• Commerce & micro finance study doubts\n\nI may refuse questions about things like stock market tips, jobs or personal life.",
-  "bot"
-);
-</script>
-</body>
-</html>
+</body></html>
